@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8221481476204717412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8742403300308205534}
+  - component: {fileID: 5691594377023828091}
+  - component: {fileID: 7572923340974539953}
+  - component: {fileID: 9140609625333986374}
+  m_Layer: 0
+  m_Name: chess_board
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8742403300308205534
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221481476204717412}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5691594377023828091
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221481476204717412}
+  m_Mesh: {fileID: -462981019419857548, guid: c2a329109d435a346b8d7a6708ef9700, type: 3}
+--- !u!23 &7572923340974539953
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221481476204717412}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b75032860ee1eb049b0604936411aebe, type: 2}
+  - {fileID: 2100000, guid: 825408e476d555b4b8f6fdd299f15214, type: 2}
+  - {fileID: 2100000, guid: 1a45b5b4e70c303418edb24165c00b8d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &9140609625333986374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221481476204717412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd43ccd5f2ac67f4a92d771e63eba1d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TileMaterial: {fileID: 2100000, guid: c441aff4cc46ddb4385c4f189b0310db, type: 2}
+  TileSize: 0.25
+  YOffset: 0.101
+  BoardCenter: {x: 0, y: 0, z: 0}
+  Prefabs:
+  - {fileID: 4842291578653785954, guid: e868830d996d8cc4d801487ae4e22458, type: 3}
+  - {fileID: 2625928462256589305, guid: 33bcf24d174912149affb1c86bcb13b2, type: 3}
+  - {fileID: 1844753847972709252, guid: a64bb47291c78914290b3f91cd2ebc7d, type: 3}
+  - {fileID: 1738619645110347631, guid: 983b7b630f5c8d846871b124d9c0f6b9, type: 3}
+  - {fileID: 2599891242296836081, guid: 1ffaa58c5fb02dd42a4b91ca58f8f77a, type: 3}
+  - {fileID: 8680159580419289058, guid: 28856a00e7769f6448cf3f229b3d578a, type: 3}
+  BlackMaterials:
+  - {fileID: 2100000, guid: dfbce517f42f83e42bf48bff39133690, type: 2}
+  - {fileID: 2100000, guid: a6b254e1ac82f3d498b8fdfb9f81fe2f, type: 2}
+  - {fileID: 2100000, guid: 3f25d902ffa8ee849b385bea31564a87, type: 2}
+  - {fileID: 2100000, guid: c5654fb53e4dd314490f128e1baefb15, type: 2}
+  - {fileID: 2100000, guid: 0332bcea738d5ce4aa7b50a20fe80086, type: 2}
+  - {fileID: 2100000, guid: 6e8e75bee917f5447838db2c1ffaa924, type: 2}
+  WhiteMaterials:
+  - {fileID: 2100000, guid: 8669cc96fff6e654492afe8e962b067c, type: 2}
+  - {fileID: 2100000, guid: 629abc311c0c2f94188842dbda4e3595, type: 2}
+  - {fileID: 2100000, guid: 44644c71f5e6ec64cad0a312b76964b6, type: 2}
+  - {fileID: 2100000, guid: 807024ba26e564c4fa6d05867a4340f5, type: 2}
+  - {fileID: 2100000, guid: 2e26e7355cb8eb6479d6040df25d25f1, type: 2}
+  - {fileID: 2100000, guid: 2dc5def924881204fb5cdb832267b3f7, type: 2}
