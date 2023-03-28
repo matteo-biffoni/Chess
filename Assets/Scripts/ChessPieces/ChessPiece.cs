@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ChessPieces
@@ -21,6 +22,25 @@ namespace ChessPieces
         public ChessPieceType Type;
 
         private Vector3 _desiredPosition;
-        private Vector3 _desiredScale;
+        private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
+
+        private void Update()
+        {
+            transform.position = Vector3.Lerp(transform.position, _desiredPosition, Time.deltaTime * 10f);
+            transform.localScale = Vector3.Lerp(transform.localScale, _desiredScale, Time.deltaTime * 10f);
+        }
+
+        public virtual void SetScale(Vector3 scale, bool force = false)
+        {
+            _desiredScale = scale;
+            if (force)
+                transform.localScale = _desiredScale;
+        }
+        public virtual void SetPosition(Vector3 position, bool force = false)
+        {
+            _desiredPosition = position;
+            if (force)
+                transform.position = _desiredPosition;
+        }
     }
 }
