@@ -2,6 +2,14 @@ using System.Collections.Generic;
 using ChessPieces;
 using UnityEngine;
 
+public enum SpecialMove
+{
+    None = 0,
+    EnPassant,
+    Castling,
+    Promotion
+}
+
 public class ChessBoard : MonoBehaviour
 {
     [Header("Art stuff")]
@@ -31,6 +39,8 @@ public class ChessBoard : MonoBehaviour
     private Vector2Int _currentHover;
     private Vector3 _bounds;
     private bool _isWhiteTurn;
+    private SpecialMove _specialMove;
+    private List<Vector2Int[]> _moveList = new ();
     
     private void Awake()
     {
@@ -73,6 +83,7 @@ public class ChessBoard : MonoBehaviour
                     {
                         _currentlyDragging = _chessPieces[hitPosition.x, hitPosition.y];
                         _availableMoves = _currentlyDragging.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
+                        _specialMove = _currentlyDragging.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves);
                         HighlightTiles();
                     }
                 }
@@ -242,7 +253,8 @@ public class ChessBoard : MonoBehaviour
         VictoryScreen.transform.GetChild(1).gameObject.SetActive(false);
         VictoryScreen.SetActive(false);
         _currentlyDragging = null;
-        _availableMoves = new List<Vector2Int>();
+        _availableMoves.Clear();
+        _moveList.Clear();
         for (var x = 0; x < TileCountX; x++)
             for (var y = 0; y < TileCountY; y++)
             {
@@ -264,6 +276,39 @@ public class ChessBoard : MonoBehaviour
     public void OnExitButton()
     {
         Application.Quit();
+    }
+    
+    // Special Moves
+    private void ProcessSpecialMove()
+    {
+        if (_specialMove == SpecialMove.EnPassant)
+        {
+            var newMove = _moveList[^1];
+            var myPawn = _chessPieces[newMove[1].x, newMove[1].y];
+            var targetPawnPosition = _moveList[^2];
+            var enemyPawn = _chessPieces[targetPawnPosition[1].x, targetPawnPosition[1].y];
+            if (myPawn.CurrentX == enemyPawn.CurrentX)
+            {
+                if (myPawn.CurrentY == enemyPawn.CurrentY - 1 || myPawn.CurrentY == enemyPawn.CurrentY + 1)
+                {
+                    if (enemyPawn.Team == 0)
+                    {
+                        _deadWhites.Add(enemyPawn);
+                        enemyPawn.SetScale(Vector3.one * DeathSize);
+                        enemyPawn.SetPosition(new Vector3(8.5f * TileSize, YOffset, -1 * TileSize) - _bounds +
+                                        new Vector3(TileSize / 2, 0, TileSize / 2) + Vector3.forward * (DeathSpacing * _deadWhites.Count));
+                    }
+                    else
+                    {
+                        _deadBlacks.Add(enemyPawn);
+                        enemyPawn.SetScale(Vector3.one * DeathSize);
+                        enemyPawn.SetPosition(new Vector3(-1.5f * TileSize, YOffset, 8f * TileSize) - _bounds +
+                                        new Vector3(TileSize / 2, 0, TileSize / 2) + Vector3.back * (DeathSpacing * _deadBlacks.Count));
+                    }
+                    _chessPieces[enemyPawn.CurrentX, enemyPawn.CurrentY] = null;
+                }
+            }
+        }
     }
     
     // Operations
@@ -316,6 +361,8 @@ public class ChessBoard : MonoBehaviour
         _chessPieces[previousPosition.x, previousPosition.y] = null;
         PositionSinglePiece(x, y);
         _isWhiteTurn = !_isWhiteTurn;
+        _moveList.Add(new [] { previousPosition, new (x, y)});
+        ProcessSpecialMove();
         return true;
     }
 }
