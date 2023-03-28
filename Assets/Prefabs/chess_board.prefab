@@ -104,6 +104,7 @@ MonoBehaviour:
   BoardCenter: {x: 0, y: 0, z: 0}
   DeathSize: 0.03
   DeathSpacing: 0.125
+  VictoryScreen: {fileID: 0}
   Prefabs:
   - {fileID: 4842291578653785954, guid: e868830d996d8cc4d801487ae4e22458, type: 3}
   - {fileID: 2625928462256589305, guid: 33bcf24d174912149affb1c86bcb13b2, type: 3}
