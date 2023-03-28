@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ChessPieces
@@ -21,6 +23,35 @@ namespace ChessPieces
         public ChessPieceType Type;
 
         private Vector3 _desiredPosition;
-        private Vector3 _desiredScale;
+        private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
+
+        private void Start()
+        {
+            transform.rotation = Quaternion.Euler(Team == 0 ? new Vector3(0, 90, 0) : new Vector3(0, 270, 0));
+        }
+
+        private void Update()
+        {
+            transform.position = Vector3.Lerp(transform.position, _desiredPosition, Time.deltaTime * 10f);
+            transform.localScale = Vector3.Lerp(transform.localScale, _desiredScale, Time.deltaTime * 10f);
+        }
+
+        public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+        {
+            return null;
+        }
+
+        public virtual void SetScale(Vector3 scale, bool force = false)
+        {
+            _desiredScale = scale;
+            if (force)
+                transform.localScale = _desiredScale;
+        }
+        public virtual void SetPosition(Vector3 position, bool force = false)
+        {
+            _desiredPosition = position;
+            if (force)
+                transform.position = _desiredPosition;
+        }
     }
 }
