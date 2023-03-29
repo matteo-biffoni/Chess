@@ -41,6 +41,11 @@ namespace ChessPieces
             return null;
         }
 
+        public virtual SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList,
+            ref List<Vector2Int> availableMoves)
+        {
+            return SpecialMove.None;
+        }
         public virtual void SetScale(Vector3 scale, bool force = false)
         {
             _desiredScale = scale;
