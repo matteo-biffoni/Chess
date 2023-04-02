@@ -322,6 +322,13 @@ public class ChessBoard : MonoBehaviour
         SpawnAllPieces();
         PositionAllPieces();
         _isWhiteTurn = true;
+        if (_localGame)
+        {
+            _currentTeam = 0;
+            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
+            
+        }
+
     }
     public void OnMenuButton()
     {
@@ -609,7 +616,10 @@ public class ChessBoard : MonoBehaviour
         PositionSinglePiece(x, y);
         _isWhiteTurn = !_isWhiteTurn;
         if (_localGame)
+        {
             _currentTeam = _currentTeam == 0 ? 1 : 0;
+            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
+        }
         _moveList.Add(new [] { previousPosition, new (x, y)});
         ProcessSpecialMove();
         if (_currentlyDragging) 
