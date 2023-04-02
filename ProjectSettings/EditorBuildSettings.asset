@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/ChessScene.unity
+    guid: 1c3e7f651fb3b5143ae01a03c8f9bde2
   m_configObjects: {}
