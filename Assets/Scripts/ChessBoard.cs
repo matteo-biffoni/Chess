@@ -16,6 +16,28 @@ public enum SpecialMove
     Promotion
 }
 
+public class ChessMove
+{
+    public int Team { get; }
+    public ChessPieceType Piece { get; }
+    public Vector2Int From { get; }
+    public Vector2Int To { get; }
+    public bool Confrontation { get; }
+    public ChessPieceType Enemy { get; }
+    public bool Victory { get; }
+
+    public ChessMove(int team, ChessPieceType piece, Vector2Int from, Vector2Int to, bool confrontation, ChessPieceType enemy, bool victory)
+    {
+        Team = team;
+        Piece = piece;
+        From = from;
+        To = to;
+        Confrontation = confrontation;
+        Enemy = confrontation ? enemy : ChessPieceType.None;
+        Victory = confrontation && victory;
+    }
+}
+
 public class ChessBoard : MonoBehaviour
 {
     [Header("Art stuff")]
@@ -35,6 +57,9 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private GameObject[] Prefabs;
     [SerializeField] private Material[] BlackMaterials;
     [SerializeField] private Material[] WhiteMaterials;
+    
+    [Header("Link with other scripts")]
+    [SerializeField] private MovesUI MovesUI;
     
     // Logic
     private ChessPiece[,] _chessPieces;
@@ -587,16 +612,19 @@ public class ChessBoard : MonoBehaviour
     {
         var cp = _chessPieces[originalX, originalY];
         var previousPosition = new Vector2Int(originalX, originalY);
+        var killed = ChessPieceType.None;
         if (_chessPieces[x, y] != null)
         {
             var ocp = _chessPieces[x, y];
             if (cp.Team == ocp.Team)
                 return;
+            // Here the battle begins
             if (ocp.Team == 0)
             {
                 if (ocp.Type == ChessPieceType.King)
                     CheckMate(1);
                 _deadWhites.Add(ocp);
+                killed = ocp.Type;
                 ocp.SetScale(Vector3.one * DeathSize);
                 ocp.SetPosition(new Vector3(8.5f * TileSize, YOffset, -1 * TileSize) - _bounds +
                                 new Vector3(TileSize / 2, 0, TileSize / 2) + Vector3.forward * (DeathSpacing * _deadWhites.Count));
@@ -606,6 +634,7 @@ public class ChessBoard : MonoBehaviour
                 if (ocp.Type == ChessPieceType.King)
                     CheckMate(0);
                 _deadBlacks.Add(ocp);
+                killed = ocp.Type;
                 ocp.SetScale(Vector3.one * DeathSize);
                 ocp.SetPosition(new Vector3(-1.5f * TileSize, YOffset, 8f * TileSize) - _bounds +
                                 new Vector3(TileSize / 2, 0, TileSize / 2) + Vector3.back * (DeathSpacing * _deadBlacks.Count));
@@ -621,6 +650,8 @@ public class ChessBoard : MonoBehaviour
             GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
         }
         _moveList.Add(new [] { previousPosition, new (x, y)});
+        MovesUI.AddMove(new ChessMove(cp.Team, cp.Type, previousPosition, new Vector2Int(x, y), killed != ChessPieceType.None, killed, true));
+        
         ProcessSpecialMove();
         if (_currentlyDragging) 
             _currentlyDragging = null;
