@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using ChessPieces;
 using TMPro;
 using UnityEngine;
@@ -23,6 +21,8 @@ public class MovesUI : MonoBehaviour
     [SerializeField] private Sprite WhiteBishop;
     [SerializeField] private Sprite WhiteRook;
     [SerializeField] private Sprite WhitePawn;
+    [SerializeField] private Sprite ConfrontationSuccess;
+    [SerializeField] private Sprite ConfrontationFailure;
 
     private void ScrollToBottom()
     {
@@ -48,6 +48,7 @@ public class MovesUI : MonoBehaviour
         newCell.transform.GetChild(3).GetComponent<TMP_Text>().text = GetLabelFromPosition(move.To);
         if (move.Confrontation)
         {
+            newCell.transform.GetChild(4).GetComponent<Image>().sprite = move.Victory ? ConfrontationSuccess : ConfrontationFailure;
             newCell.transform.GetChild(5).GetComponent<Image>().sprite = move.Enemy switch
             {
                 ChessPieceType.None => null,
