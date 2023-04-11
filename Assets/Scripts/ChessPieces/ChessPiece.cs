@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,8 +31,9 @@ namespace ChessPieces
 
         private void Update()
         {
-            transform.position = Vector3.Lerp(transform.position, _desiredPosition, Time.deltaTime * 10f);
-            transform.localScale = Vector3.Lerp(transform.localScale, _desiredScale, Time.deltaTime * 10f);
+            Transform tr;
+            (tr = transform).position = Vector3.Lerp(transform.position, _desiredPosition, Time.deltaTime * 10f);
+            transform.localScale = Vector3.Lerp(tr.localScale, _desiredScale, Time.deltaTime * 10f);
         }
 
         public virtual List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
