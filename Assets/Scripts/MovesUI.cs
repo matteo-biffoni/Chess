@@ -69,7 +69,7 @@ public class MovesUI : MonoBehaviour
         ScrollToBottom();
     }
 
-    private static string GetLabelFromPosition(Vector2Int pos)
+    public static string GetLabelFromPosition(Vector2Int pos)
     {
         return $"{Convert.ToChar('A' + pos.x)}{pos.y + 1}";
     }

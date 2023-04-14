@@ -23,7 +23,11 @@ public class Confrontation : MonoBehaviour
     {
         Instance._currentAttacking = attacking;
         Instance._currentDefending = defending;
-        
+    }
+
+    public static string GetActualConfrontationInfo()
+    {
+        return Instance._currentAttacking + " is attacking " + Instance._currentDefending;
     }
 
     public static void SetCurrentOutcome(Outcome outcome)

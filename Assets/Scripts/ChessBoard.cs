@@ -153,7 +153,20 @@ public class ChessBoard : MonoBehaviour
                         RemoveHighlightTiles();
                         Confrontation.StartConfrontation(_chessPieces[previousPosition.x, previousPosition.y],
                             _chessPieces[hitPosition.x, hitPosition.y]);
-                        GameUI.Instance.ZoomIn(_chessPieces[hitPosition.x, hitPosition.y], _currentTeam);
+                        GameUI.Instance.ZoomIn(_chessPieces[hitPosition.x, hitPosition.y], true);
+                        if (!_localGame)
+                        {
+                            var cc = new NetCreateConfrontation
+                            {
+                                AttackingType = _chessPieces[previousPosition.x, previousPosition.y].Type,
+                                AttackingX = previousPosition.x,
+                                AttackingY = previousPosition.y,
+                                DefendingType = _chessPieces[hitPosition.x, hitPosition.y].Type,
+                                DefendingX = hitPosition.x,
+                                DefendingY = hitPosition.y
+                            };
+                            Client.Instance.SendToServer(cc);
+                        }
                     }
                     else if (FightWithConfrontation && _specialMove == SpecialMove.EnPassant)
                     {
@@ -164,7 +177,20 @@ public class ChessBoard : MonoBehaviour
                         var attacking = _chessPieces[previousPosition.x, previousPosition.y];
                         var defending = _chessPieces[_moveList[^1][1].x, _moveList[^1][1].y];
                         Confrontation.StartConfrontation(attacking, defending);
-                        GameUI.Instance.ZoomIn(defending, _currentTeam);
+                        GameUI.Instance.ZoomIn(defending, true);
+                        if (!_localGame)
+                        {
+                            var cc = new NetCreateConfrontation
+                            {
+                                AttackingType = attacking.Type,
+                                AttackingX = attacking.CurrentX,
+                                AttackingY = attacking.CurrentY,
+                                DefendingType = defending.Type,
+                                DefendingX = defending.CurrentX,
+                                DefendingY = defending.CurrentY
+                            };
+                            Client.Instance.SendToServer(cc);
+                        }
                     }
                     else
                     {
@@ -215,7 +241,16 @@ public class ChessBoard : MonoBehaviour
 
         if (FightWithConfrontation && !_confrontationHandled && Confrontation.GetCurrentOutcome() != Outcome.NotAvailable)
         {
-            StartCoroutine(EndConfrontation(Confrontation.GetCurrentOutcome()));
+            var outcome = Confrontation.GetCurrentOutcome();
+            if (!_localGame)
+            {
+                var nrc = new NetResolveConfrontation
+                {
+                    Outcome = outcome
+                };
+                Client.Instance.SendToServer(nrc);
+            }
+            StartCoroutine(EndConfrontation(outcome));
             _confrontationHandled = true;
         }
     }
@@ -758,10 +793,14 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SWelcome += OnWelcomeServer;
         NetUtility.SMakeMove += OnMakeMoveServer;
         NetUtility.SRematch += OnRematchServer;
+        NetUtility.SCreateConfrontation += OnCreateConfrontationServer;
+        NetUtility.SResolveConfrontation += OnResolveConfrontationServer;
         NetUtility.CWelcome += OnWelcomeClient;
         NetUtility.CStartGame += OnStartGameClient;
         NetUtility.CMakeMove += OnMakeMoveClient;
         NetUtility.CRematch += OnRematchClient;
+        NetUtility.CCreateConfrontation += OnCreateConfrontationClient;
+        NetUtility.CResolveConfrontation += OnResolveConfrontationClient;
         GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
     // ReSharper disable once UnusedMember.Local
@@ -770,10 +809,14 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SWelcome -= OnWelcomeServer;
         NetUtility.SMakeMove -= OnMakeMoveServer;
         NetUtility.SRematch -= OnRematchServer;
+        NetUtility.SCreateConfrontation -= OnCreateConfrontationServer;
+        NetUtility.SResolveConfrontation -= OnResolveConfrontationServer;
         NetUtility.CWelcome -= OnWelcomeClient;
         NetUtility.CStartGame -= OnStartGameClient;
         NetUtility.CMakeMove -= OnMakeMoveClient;
         NetUtility.CRematch -= OnRematchClient;
+        NetUtility.CCreateConfrontation -= OnCreateConfrontationClient;
+        NetUtility.CResolveConfrontation -= OnResolveConfrontationClient;
         GameUI.Instance.SetLocalGame -= OnSetLocalGame;
     }
     private void OnWelcomeServer(NetMessage msg, NetworkConnection cnn)
@@ -800,6 +843,26 @@ public class ChessBoard : MonoBehaviour
     private void OnRematchServer(NetMessage msg, NetworkConnection cnn)
     {
         Server.Instance.Broadcast(msg);
+    }
+
+    private void OnCreateConfrontationServer(NetMessage msg, NetworkConnection cnn)
+    {
+        if (msg is not NetCreateConfrontation ncc)
+        {
+            Debug.LogError("[S] Could not cast NetMessage to NetCreateConfrontation");
+            return;
+        }
+        Server.Instance.Broadcast(ncc);
+    }
+
+    private void OnResolveConfrontationServer(NetMessage msg, NetworkConnection cnn)
+    {
+        if (msg is not NetResolveConfrontation nrc)
+        {
+            Debug.LogError("[S] Could not cast NetMessage to NetResolveConfrontation");
+            return;
+        }
+        Server.Instance.Broadcast(nrc);
     }
     private void OnWelcomeClient(NetMessage msg)
     {
@@ -854,6 +917,53 @@ public class ChessBoard : MonoBehaviour
         }
         if (_playerRematch[0] && _playerRematch[1])
             GameReset();
+    }
+    private void OnCreateConfrontationClient(NetMessage msg)
+    {
+        if (msg is not NetCreateConfrontation ncc)
+        {
+            Debug.LogError("[C] Could not cast NetMessage to NetCreateConfrontation");
+            return;
+        }
+        var attacking = _chessPieces[ncc.AttackingX, ncc.AttackingY];
+        var defending = _chessPieces[ncc.DefendingX, ncc.DefendingY];
+        
+        Debug.Log(attacking + " is attacking " + defending);
+        StartCoroutine(ShowAttackingMoveThenGoToConfrontation(attacking, defending));
+    }
+
+    private void OnResolveConfrontationClient(NetMessage msg)
+    {
+        if (msg is not NetResolveConfrontation nrc)
+        {
+            Debug.LogError("[C] Could not cast NetMessage to NetResolveConfrontation");
+            return;
+        }
+        Confrontation.SetCurrentOutcome(nrc.Outcome);
+    }
+    private IEnumerator ShowAttackingMoveThenGoToConfrontation(ChessPiece attacking, ChessPiece defending)
+    {
+        var attackingTransform = attacking.transform;
+        var attackingPosition = attackingTransform.position;
+        attackingPosition = new Vector3(attackingPosition.x,
+            0.701f, attackingPosition.z);
+        attackingTransform.position = attackingPosition;
+        var defendingTransform = defending.transform;
+        var defendingPosition = defendingTransform.position;
+        var target = new Vector3(defendingPosition.x, 0.701f,
+            defendingPosition.z);
+        attacking.SetPosition(target);
+        while (Vector3.Distance(attackingTransform.position, target) > 0.01f)
+        {
+            yield return null;
+        }
+        StartCoroutine(attacking.SetPositionAfterSeconds(GetTileCenter(attacking.CurrentX, attacking.CurrentY), 2));
+        if (defending.Team == _currentTeam)
+        {
+            _confrontationHandled = false;
+            Confrontation.StartConfrontation(attacking, defending);
+            GameUI.Instance.ZoomIn(defending, false);
+        }
     }
     private void ShutdownRelay()
     {

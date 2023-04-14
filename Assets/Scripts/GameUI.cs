@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using ChessPieces;
 using Cinemachine;
 using Net;
@@ -35,6 +36,7 @@ public class GameUI : MonoBehaviour
     private static readonly int HostMenu = Animator.StringToHash("HostMenu");
     private static readonly int StartMenu = Animator.StringToHash("StartMenu");
     private bool _confrontationHandled = true;
+    private bool _localGame;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
@@ -62,7 +64,7 @@ public class GameUI : MonoBehaviour
         StartCoroutine(ZoomOutAndClean(4));
     }
 
-    public void ZoomIn(ChessPiece defender, int turn)
+    public void ZoomIn(ChessPiece defender, bool isAttacking)
     {
         ChessBoard.enabled = false;
         if (CameraAngles is not { Length: 3 })
@@ -77,19 +79,33 @@ public class GameUI : MonoBehaviour
                 parent = Cameras
             }
         };
-        newCamera.transform.position = turn switch
+        if (_localGame)
         {
-            0 => CameraAngles[1].transform.position,
-            1 => CameraAngles[2].transform.position,
-            _ => newCamera.transform.position
-        };
+            newCamera.transform.position = defender.Team switch
+            {
+                0 => CameraAngles[2].transform.position,
+                1 => CameraAngles[1].transform.position,
+                _ => newCamera.transform.position
+            };
+        }
+        else
+        {
+            foreach (var cameraAngle in CameraAngles)
+            {
+                if (cameraAngle.activeSelf)
+                {
+                    newCamera.transform.position = cameraAngle.transform.position;
+                    break;
+                }
+            }
+        }
         newCamera.transform.LookAt(defender.transform);
         var virtualCamera = newCamera.AddComponent<CinemachineVirtualCamera>();
         foreach (var cameraAngle in CameraAngles)
         {
             cameraAngle.SetActive(false);
         }
-        StartCoroutine(ZoomInAnimationAndChangeScene(virtualCamera, 10));
+        StartCoroutine(ZoomInAnimationAndChangeScene(virtualCamera, 10, isAttacking));
     }
 
     private IEnumerator ZoomOutAndClean(int speed)
@@ -100,22 +116,27 @@ public class GameUI : MonoBehaviour
             yield return null;
         }
         _cameraBeforeConfrontation.gameObject.SetActive(false);
+        var prevCamera = CameraAngles.FirstOrDefault(cameraAngle => cameraAngle.transform.position == _cameraBeforeConfrontation.transform.position);
         _cameraBeforeConfrontation = null;
-        switch (Confrontation.GetCurrentAttacking().Team)
-        {
-            case 0:
-                CameraAngles[1].SetActive(true);
-                break;
-            case 1:
-                CameraAngles[2].SetActive(true);
-                break;
-        }
+        if (_localGame)
+            switch (Confrontation.GetCurrentAttacking().Team)
+            {
+                case 0:
+                    CameraAngles[1].SetActive(true);
+                    break;
+                case 1:
+                    CameraAngles[2].SetActive(true);
+                    break;
+            }
+        else if (prevCamera != null) 
+            prevCamera.SetActive(true);
         Confrontation.ResetConfrontation();
     }
 
-    private IEnumerator ZoomInAnimationAndChangeScene(CinemachineVirtualCamera zoomInCamera, int speed)
+    private IEnumerator ZoomInAnimationAndChangeScene(CinemachineVirtualCamera zoomInCamera, int speed, bool isAttacking)
     {
         _cameraBeforeConfrontation = zoomInCamera;
+        ConfrontationListener.IsAttacking = isAttacking;
         var asyncScene = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
         asyncScene.allowSceneActivation = false;
         while (Math.Abs(_cameraBeforeConfrontation.m_Lens.FieldOfView - .01f) > .001f)
@@ -140,6 +161,7 @@ public class GameUI : MonoBehaviour
     {
         MenuAnimator.SetTrigger(InGameMenu);
         SetLocalGame?.Invoke(true);
+        _localGame = true;
         Server.Init(8007);
         Client.Init("127.0.0.1", 8007);
     }
@@ -151,12 +173,14 @@ public class GameUI : MonoBehaviour
     {
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
+        _localGame = false;
         Client.Init("127.0.0.1", 8007);
         MenuAnimator.SetTrigger(HostMenu);
     }
     public void OnOnlineConnectButton()
     {
         SetLocalGame?.Invoke(false);
+        _localGame = false;
         Client.Init(AddressInput.text, 8007);
     }
     public void OnOnlineBackButton()

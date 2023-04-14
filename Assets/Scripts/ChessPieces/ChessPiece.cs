@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +24,27 @@ namespace ChessPieces
 
         private Vector3 _desiredPosition;
         private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
+        
+        private static string ChessPieceTypeToString(ChessPieceType cpt)
+        {
+            return cpt switch
+            {
+                ChessPieceType.None => "",
+                ChessPieceType.Pawn => "Pawn",
+                ChessPieceType.Rook => "Rook",
+                ChessPieceType.Knight => "Knight",
+                ChessPieceType.Bishop => "Bishop",
+                ChessPieceType.Queen => "Queen",
+                ChessPieceType.King => "King",
+                _ => ""
+            };
+        }
+
+        public override string ToString()
+        {
+            return (Team == 0 ? "White" : "Black") + " " + ChessPieceTypeToString(Type) + " in " +
+                   MovesUI.GetLabelFromPosition(new Vector2Int(CurrentX, CurrentY));
+        }
 
         private void Start()
         {
@@ -57,6 +79,12 @@ namespace ChessPieces
             _desiredPosition = position;
             if (force)
                 transform.position = _desiredPosition;
+        }
+
+        public IEnumerator SetPositionAfterSeconds(Vector3 position, int seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+            SetPosition(position, true);
         }
     }
 }
