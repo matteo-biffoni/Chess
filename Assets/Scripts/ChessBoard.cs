@@ -168,7 +168,8 @@ public class ChessBoard : MonoBehaviour
                             Client.Instance.SendToServer(cc);
                         }
                     }
-                    else if (FightWithConfrontation && _specialMove == SpecialMove.EnPassant)
+                    else if (FightWithConfrontation && _specialMove == SpecialMove.EnPassant &&
+                             hitPosition.x == _moveList[^1][1].x)
                     {
                         _confrontationHandled = false;
                         _currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y));
