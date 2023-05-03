@@ -29,6 +29,34 @@ namespace ChessPieces
             return r;
         }
 
+        public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            if (CurrentX != tileCountX - 1)
+            {
+                if (CurrentY != tileCountY - 1)
+                    r.Add(new Vector2Int(CurrentX + 1, CurrentY + 1));
+                if (CurrentY != 0)
+                    r.Add(new Vector2Int(CurrentX + 1, CurrentY - 1));
+            }
+            if (CurrentX != 0)
+            {
+                if (CurrentY != 0)
+                    r.Add(new Vector2Int(CurrentX - 1, CurrentY - 1));
+                if (CurrentY != tileCountY - 1)
+                    r.Add(new Vector2Int(CurrentX - 1, CurrentY + 1));
+            }
+            if (CurrentY != 0)
+            {
+                r.Add(new Vector2Int(CurrentX, CurrentY - 1));
+            }
+            if (CurrentY != tileCountY - 1)
+            {
+                r.Add(new Vector2Int(CurrentX, CurrentY + 1));
+            }
+            return r;
+        }
+
         public override SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
         {
             var direction = Team == 0 ? 1 : -1;

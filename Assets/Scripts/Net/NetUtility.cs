@@ -14,7 +14,9 @@ namespace Net
         MakeMove = 4,
         Rematch = 5,
         CreateConfrontation = 6,
-        ResolveConfrontation = 7
+        ResolveConfrontation = 7,
+        MakeMoveInConfrontation = 8,
+        NormalAttackInConfrontation = 9
     }
     public static class NetUtility
     {
@@ -45,6 +47,12 @@ namespace Net
                 case OpCode.ResolveConfrontation:
                     msg = new NetResolveConfrontation(stream);
                     break;
+                case OpCode.MakeMoveInConfrontation:
+                    msg = new NetMakeMoveInConfrontation(stream);
+                    break;
+                case OpCode.NormalAttackInConfrontation:
+                    msg = new NetNormalAttackInConfrontation(stream);
+                    break;
                 default:
                     Debug.LogError("Message received has no OpCode");
                     break;
@@ -66,6 +74,8 @@ namespace Net
         public static Action<NetMessage> CRematch;
         public static Action<NetMessage> CCreateConfrontation;
         public static Action<NetMessage> CResolveConfrontation;
+        public static Action<NetMessage> CMakeMoveInConfrontation;
+        public static Action<NetMessage> CNormalAttackInConfrontation;
         public static Action<NetMessage, NetworkConnection> SKeepAlive;
         public static Action<NetMessage, NetworkConnection> SWelcome;
         public static Action<NetMessage, NetworkConnection> SStartGame;
@@ -73,5 +83,7 @@ namespace Net
         public static Action<NetMessage, NetworkConnection> SRematch;
         public static Action<NetMessage, NetworkConnection> SCreateConfrontation;
         public static Action<NetMessage, NetworkConnection> SResolveConfrontation;
+        public static Action<NetMessage, NetworkConnection> SMakeMoveInConfrontation;
+        public static Action<NetMessage, NetworkConnection> SNormalAttackInConfrontation;
     }
 }

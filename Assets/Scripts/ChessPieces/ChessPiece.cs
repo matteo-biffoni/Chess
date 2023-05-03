@@ -63,6 +63,12 @@ namespace ChessPieces
             return null;
         }
 
+        public virtual List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX,
+            int tileCountY)
+        {
+            return null;
+        }
+
         public virtual SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList,
             ref List<Vector2Int> availableMoves)
         {

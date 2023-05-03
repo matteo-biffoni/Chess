@@ -805,7 +805,7 @@ public class ChessBoard : MonoBehaviour
         GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
     // ReSharper disable once UnusedMember.Local
-    private void UnregisterEvents()
+    public void UnregisterEvents()
     {
         NetUtility.SWelcome -= OnWelcomeServer;
         NetUtility.SMakeMove -= OnMakeMoveServer;
