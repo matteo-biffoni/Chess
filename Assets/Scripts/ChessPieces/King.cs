@@ -55,6 +55,32 @@ namespace ChessPieces
             return r;
         }
 
+        public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            if (CurrentX + 1 < tileCountX)
+            {
+                r.Add(new Vector2Int(CurrentX + 1, CurrentY));
+                if (CurrentY + 1 < tileCountY)
+                    r.Add(new Vector2Int(CurrentX + 1, CurrentY + 1));
+                if (CurrentY - 1 >= 0)
+                    r.Add(new Vector2Int(CurrentX + 1, CurrentY - 1));
+            }
+            if (CurrentX - 1 >= 0)
+            {
+                r.Add(new Vector2Int(CurrentX - 1, CurrentY));
+                if (CurrentY + 1 < tileCountY)
+                    r.Add(new Vector2Int(CurrentX - 1, CurrentY + 1));
+                if (CurrentY - 1 >= 0)
+                    r.Add(new Vector2Int(CurrentX - 1, CurrentY - 1));
+            }
+            if (CurrentY + 1 < tileCountY)
+                r.Add(new Vector2Int(CurrentX, CurrentY + 1));
+            if (CurrentY - 1 >= 0)
+                r.Add(new Vector2Int(CurrentX, CurrentY - 1));
+            return r;
+        }
+
         public override SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
         {
             var r = SpecialMove.None;

@@ -57,5 +57,43 @@ namespace ChessPieces
                     r.Add(new Vector2Int(x, y));
             return r;
         }
+
+        public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            var x = CurrentX + 1;
+            var y = CurrentY + 2;
+            if (x < tileCountX && y < tileCountY)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX + 2;
+            y = CurrentY + 1;
+            if (x < tileCountX && y < tileCountY)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX - 1;
+            y = CurrentY + 2;
+            if (x >= 0 && y < tileCountY)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX - 2;
+            y = CurrentY + 1;
+            if (x >= 0 && y < tileCountY)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX + 1;
+            y = CurrentY - 2;
+            if (x < tileCountX && y >= 0)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX + 2;
+            y = CurrentY - 1;
+            if (x < tileCountX && y >= 0)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX - 1;
+            y = CurrentY - 2;
+            if (x >= 0 && y >= 0)
+                r.Add(new Vector2Int(x, y));
+            x = CurrentX - 2;
+            y = CurrentY - 1;
+            if (x >= 0 && y >= 0)
+                r.Add(new Vector2Int(x, y));
+            return r;
+        }
     }
 }

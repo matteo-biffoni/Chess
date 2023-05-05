@@ -54,5 +54,19 @@ namespace ChessPieces
             }
             return r;
         }
+
+        public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            for (var i = CurrentY - 1; i >= 0; i--)
+                r.Add(new Vector2Int(CurrentX, i));
+            for (var i = CurrentY + 1; i < tileCountY; i++)
+                r.Add(new Vector2Int(CurrentX, i));
+            for (var i = CurrentX - 1; i >= 0; i--)
+                r.Add(new Vector2Int(i, CurrentY));
+            for (var i = CurrentX + 1; i < tileCountX; i++)
+                r.Add(new Vector2Int(i, CurrentY));
+            return r;
+        }
     }
 }

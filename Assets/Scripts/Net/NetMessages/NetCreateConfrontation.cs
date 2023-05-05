@@ -12,6 +12,7 @@ namespace Net.NetMessages
         public ChessPieceType DefendingType;
         public int DefendingX;
         public int DefendingY;
+        public uint DefendingHp;
         public NetCreateConfrontation()
         {
             Code = OpCode.CreateConfrontation;
@@ -30,6 +31,7 @@ namespace Net.NetMessages
             writer.WriteByte((byte)DefendingType);
             writer.WriteInt(DefendingX);
             writer.WriteInt(DefendingY);
+            writer.WriteUInt(DefendingHp);
         }
         public override void Deserialize(DataStreamReader reader)
         {
@@ -39,6 +41,7 @@ namespace Net.NetMessages
             DefendingType = (ChessPieceType) reader.ReadByte();
             DefendingX = reader.ReadInt();
             DefendingY = reader.ReadInt();
+            DefendingHp = reader.ReadUInt();
         }
         public override void ReceivedOnClient()
         {

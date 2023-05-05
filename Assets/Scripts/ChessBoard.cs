@@ -163,7 +163,8 @@ public class ChessBoard : MonoBehaviour
                                 AttackingY = previousPosition.y,
                                 DefendingType = _chessPieces[hitPosition.x, hitPosition.y].Type,
                                 DefendingX = hitPosition.x,
-                                DefendingY = hitPosition.y
+                                DefendingY = hitPosition.y,
+                                DefendingHp = _chessPieces[hitPosition.x, hitPosition.y].GetHp()
                             };
                             Client.Instance.SendToServer(cc);
                         }
@@ -188,7 +189,8 @@ public class ChessBoard : MonoBehaviour
                                 AttackingY = attacking.CurrentY,
                                 DefendingType = defending.Type,
                                 DefendingX = defending.CurrentX,
-                                DefendingY = defending.CurrentY
+                                DefendingY = defending.CurrentY,
+                                DefendingHp = defending.GetHp()
                             };
                             Client.Instance.SendToServer(cc);
                         }
@@ -247,7 +249,8 @@ public class ChessBoard : MonoBehaviour
             {
                 var nrc = new NetResolveConfrontation
                 {
-                    Outcome = outcome
+                    Outcome = outcome,
+                    NewDefendingHp = Confrontation.GetCurrentDefending().GetHp()
                 };
                 Client.Instance.SendToServer(nrc);
             }
@@ -940,6 +943,8 @@ public class ChessBoard : MonoBehaviour
             Debug.LogError("[C] Could not cast NetMessage to NetResolveConfrontation");
             return;
         }
+        Confrontation.GetCurrentDefending().SetHp(nrc.NewDefendingHp);
+        ChessBoardConfrontation.UnregisterEvents();
         Confrontation.SetCurrentOutcome(nrc.Outcome);
     }
     private IEnumerator ShowAttackingMoveThenGoToConfrontation(ChessPiece attacking, ChessPiece defending)

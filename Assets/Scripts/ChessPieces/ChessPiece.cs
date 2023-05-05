@@ -24,6 +24,27 @@ namespace ChessPieces
 
         private Vector3 _desiredPosition;
         private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
+        private uint _hp = 2;
+
+        public void DamagePiece()
+        {
+            _hp--;
+        }
+
+        public uint GetHp()
+        {
+            return _hp;
+        }
+
+        public void SetHp(uint hp)
+        {
+            _hp = hp;
+        }
+
+        public bool IsDead()
+        {
+            return _hp == 0;
+        }
         
         private static string ChessPieceTypeToString(ChessPieceType cpt)
         {

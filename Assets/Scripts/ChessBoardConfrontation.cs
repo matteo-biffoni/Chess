@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using ChessPieces;
 using Net;
 using Net.NetMessages;
+using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
 
@@ -11,6 +12,9 @@ public class ChessBoardConfrontation : MonoBehaviour
 {
     private ChessPiece _attacking;
     private ChessPiece _defending;
+    private ChessPiece _defendingConfrontation;
+
+    public static ChessBoardConfrontation Instance { get; set; }
 
     [SerializeField] private Material TileMaterial;
     [SerializeField] private float TileSize = 1f;
@@ -18,13 +22,21 @@ public class ChessBoardConfrontation : MonoBehaviour
     private const int TileCountX = 8;
     private const int TileCountY = 8;
     [SerializeField] private Vector3 BoardCenter = Vector3.zero;
+    [SerializeField] private float NormalAttackInterval = 1f;
     
     [SerializeField] private GameObject[] Prefabs;
     [SerializeField] private Material[] BlackMaterials;
     [SerializeField] private Material[] WhiteMaterials;
+    [SerializeField] private float MiniGameDuration = 10f;
+
+    [SerializeField] private TMP_Text TimerText;
+    [SerializeField] private TMP_Text DefendingHpText;
+
+    private bool _timeElapsed;
     
     private GameObject[,] _tiles;
     private Vector3 _bounds;
+    private bool _canFireNormalAttack = true;
     
     private ChessPiece[,] _board;
 
@@ -36,26 +48,47 @@ public class ChessBoardConfrontation : MonoBehaviour
 
     private Camera _mainCamera;
 
+    private bool[,] _firedCells;
+
     private void Awake()
     {
+        Instance = this;
         SetupChessBoard();
         RegisterEvents();
     }
 
-    private void RegisterEvents()
+    private static void RegisterEvents()
     {
-        NetUtility.CMakeMoveInConfrontation += OnMakeMoveInConfrontationClient;
-        NetUtility.CNormalAttackInConfrontation += OnNormalAttackInConfrontationClient;
-        NetUtility.SMakeMoveInConfrontation += OnMakeMoveInConfrontationServer;
-        NetUtility.SNormalAttackInConfrontation += OnNormalAttackInConfrontationServer;
+        NetUtility.CMakeMoveInConfrontation += Instance.OnMakeMoveInConfrontationClient;
+        NetUtility.CNormalAttackInConfrontation += Instance.OnNormalAttackInConfrontationClient;
+        NetUtility.CHitInConfrontation += Instance.OnHitInConfrontationClient;
+        NetUtility.SMakeMoveInConfrontation += Instance.OnMakeMoveInConfrontationServer;
+        NetUtility.SNormalAttackInConfrontation += Instance.OnNormalAttackInConfrontationServer;
+        NetUtility.SHitInConfrontation += Instance.OnHitInConfrontationServer;
     }
 
-    private void UnregisterEvents()
+    public static void UnregisterEvents()
     {
-        NetUtility.CMakeMoveInConfrontation -= OnMakeMoveInConfrontationClient;
-        NetUtility.CNormalAttackInConfrontation -= OnNormalAttackInConfrontationClient;
-        NetUtility.SMakeMoveInConfrontation -= OnMakeMoveInConfrontationServer;
-        NetUtility.SNormalAttackInConfrontation -= OnNormalAttackInConfrontationServer;
+        NetUtility.CMakeMoveInConfrontation -= Instance.OnMakeMoveInConfrontationClient;
+        NetUtility.CNormalAttackInConfrontation -= Instance.OnNormalAttackInConfrontationClient;
+        NetUtility.CHitInConfrontation -= Instance.OnHitInConfrontationClient;
+        NetUtility.SMakeMoveInConfrontation -= Instance.OnMakeMoveInConfrontationServer;
+        NetUtility.SNormalAttackInConfrontation -= Instance.OnNormalAttackInConfrontationServer;
+        NetUtility.SHitInConfrontation -= Instance.OnHitInConfrontationServer;
+    }
+
+    private void OnHitInConfrontationClient(NetMessage msg)
+    {
+        if (msg is not NetHitInConfrontation nhic)
+        {
+            Debug.LogError("[C] Could not cast NetMessage to NetHitInConfrontation");
+            return;
+        }
+        if (ConfrontationListener.IsAttacking)
+        {
+            _defending.DamagePiece();
+        }
+        DefendingHpText.text = "Piece hp: " + _defending.GetHp();
     }
 
     private void OnNormalAttackInConfrontationClient(NetMessage msg)
@@ -87,6 +120,16 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
     }
 
+    private void OnHitInConfrontationServer(NetMessage msg, NetworkConnection cnn)
+    {
+        if (msg is not NetHitInConfrontation nhic)
+        {
+            Debug.LogError("[S] Could not cast NetMessage to NetHitInConfrontation");
+            return;
+        }
+        Server.Instance.Broadcast(nhic);
+    }
+
     private void OnNormalAttackInConfrontationServer(NetMessage msg, NetworkConnection cnn)
     {
         if (msg is not NetNormalAttackInConfrontation nnaic)
@@ -116,6 +159,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     private void FireCell(Vector2Int cell)
     {
         // Mettere preavviso
+        _firedCells[cell.x, cell.y] = true;
         _tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("FiredCell");
         StartCoroutine(UnFireCellAfterXSec(cell, 1));
     }
@@ -123,7 +167,15 @@ public class ChessBoardConfrontation : MonoBehaviour
     private IEnumerator UnFireCellAfterXSec(Vector2Int cell, int sec)
     {
         yield return new WaitForSeconds(sec);
+        _firedCells[cell.x, cell.y] = false;
         _tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("Tile");
+        if (!ConfrontationListener.IsAttacking) SetAvailablePath();
+    }
+
+    private IEnumerator ResetNormalAttackAfterInterval()
+    {
+        yield return new WaitForSeconds(NormalAttackInterval);
+        _canFireNormalAttack = true;
     }
 
     private void Update()
@@ -135,12 +187,14 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (ConfrontationListener.IsAttacking)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && _canFireNormalAttack)
             {
                 var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("Tile")))
                 {
                     var hitPosition = LookupTileIndex(info.transform.gameObject);
+                    _canFireNormalAttack = false;
+                    StartCoroutine(ResetNormalAttackAfterInterval());
                     FireCell(hitPosition);
                     var nnaic = new NetNormalAttackInConfrontation
                     {
@@ -158,21 +212,24 @@ public class ChessBoardConfrontation : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("HighlightHard")))
+                    if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("HighlightHard", "FiredCell")))
                     {
                         var hitPosition = LookupTileIndex(info.transform.gameObject);
-                        _aim = GetTileCenter(hitPosition.x, hitPosition.y);
-                        _defending.CurrentX = hitPosition.x;
-                        _defending.CurrentY = hitPosition.y;
-                        _defending.SetPosition(_aim);
-                        _isMoving = true;
-                        RemoveHighlightTiles();
-                        var mmic = new NetMakeMoveInConfrontation
+                        if (_availableMoves.Contains(hitPosition))
                         {
-                            DestinationX = _defending.CurrentX,
-                            DestinationY = _defending.CurrentY
-                        };
-                        Client.Instance.SendToServer(mmic);
+                            _aim = GetTileCenter(hitPosition.x, hitPosition.y);
+                            _defending.CurrentX = hitPosition.x;
+                            _defending.CurrentY = hitPosition.y;
+                            _defending.SetPosition(_aim);
+                            _isMoving = true;
+                            RemoveHighlightTiles();
+                            var mmic = new NetMakeMoveInConfrontation
+                            {
+                                DestinationX = _defending.CurrentX,
+                                DestinationY = _defending.CurrentY
+                            };
+                            Client.Instance.SendToServer(mmic);
+                        }
                     }
                 }
             }
@@ -185,6 +242,51 @@ public class ChessBoardConfrontation : MonoBehaviour
                     SetAvailablePath();
                 }
             }
+        }
+    }
+
+    private Vector2Int GetCellForPlayerPosition()
+    {
+        var dist = float.MaxValue;
+        var cell = new Vector2Int(-1, -1);
+        for (var x = 0; x < TileCountX; x++)
+        {
+            for (var y = 0; y < TileCountY; y++)
+            {
+                var actDist = Vector3.Distance(GetTileCenter(x, y), _defending.transform.position);
+                if (dist > actDist)
+                {
+                    dist = actDist;
+                    cell = new Vector2Int(x, y);
+                } 
+            }
+        }
+        return cell;
+    }
+
+    private IEnumerator CheckForDamageWrapper()
+    {
+        while (true)
+        {
+            CheckForDamage(GetCellForPlayerPosition());
+            // SE pezzo morto o fine gioco uscire dal ciclo
+            if (_defending.IsDead() || _timeElapsed) break;
+            yield return new WaitForSeconds(0.5f);
+        }
+        // SE siamo fuori dal ciclo perchè è morto il pezzo => WIN
+        // Altrimenti => LOSE
+        _defendingConfrontation.SetHp(_defending.GetHp());
+        Confrontation.SetCurrentOutcome(_defending.IsDead() ? Outcome.Success : Outcome.Failure);
+        yield return null;
+    }
+
+    private void CheckForDamage(Vector2Int tile)
+    {
+        if (_firedCells[tile.x, tile.y])
+        {
+            _defending.DamagePiece();
+            // Mandare messaggio all'attaccante
+            Client.Instance.SendToServer(new NetHitInConfrontation());
         }
     }
     
@@ -212,18 +314,20 @@ public class ChessBoardConfrontation : MonoBehaviour
 
     private void SetupChessBoard()
     {
-        var defendingConfrontation = Confrontation.GetCurrentDefending();
+        _defendingConfrontation = Confrontation.GetCurrentDefending();
         var attackingConfrontation = Confrontation.GetCurrentAttacking();
         _board = new ChessPiece[TileCountX, TileCountY];
+        _firedCells = new bool[TileCountX, TileCountY];
         GenerateAllTiles(TileSize, TileCountX, TileCountY);
-        _defending = Instantiate(Prefabs[(int)defendingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
-        _defending.Type = defendingConfrontation.Type;
-        _defending.Team = defendingConfrontation.Team;
-        _defending.GetComponent<MeshRenderer>().material = defendingConfrontation.Team switch
+        _defending = Instantiate(Prefabs[(int)_defendingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
+        _defending.Type = _defendingConfrontation.Type;
+        _defending.Team = _defendingConfrontation.Team;
+        _defending.SetHp(_defendingConfrontation.GetHp());
+        _defending.GetComponent<MeshRenderer>().material = _defendingConfrontation.Team switch
         {
-            1 => BlackMaterials[(int)defendingConfrontation.Type - 1],
-            0 => WhiteMaterials[(int)defendingConfrontation.Type - 1],
-            _ => defendingConfrontation.GetComponent<MeshRenderer>().material
+            1 => BlackMaterials[(int)_defendingConfrontation.Type - 1],
+            0 => WhiteMaterials[(int)_defendingConfrontation.Type - 1],
+            _ => _defendingConfrontation.GetComponent<MeshRenderer>().material
         };
         _defending.CurrentX = 4;
         _defending.CurrentY = 4;
@@ -242,7 +346,25 @@ public class ChessBoardConfrontation : MonoBehaviour
         _attacking.SetPosition(GetTileCenter(9, 4));
         
         _board[4, 4] = _defending;
-        if (!ConfrontationListener.IsAttacking) SetAvailablePath();
+        if (!ConfrontationListener.IsAttacking)
+        {
+            SetAvailablePath();
+            StartCoroutine(CheckForDamageWrapper());
+        }
+        DefendingHpText.text = "Piece hp: " + _defending.GetHp();
+        StartCoroutine(MiniGameTimer());
+    }
+
+    private IEnumerator MiniGameTimer()
+    {
+        var timeElapsed = MiniGameDuration;
+        while (timeElapsed > 0)
+        {
+            timeElapsed -= Time.deltaTime;
+            TimerText.text = "Timer: " + timeElapsed;
+            yield return null;
+        }
+        _timeElapsed = true;
     }
     
     private Vector3 GetTileCenter(int x, int y)
