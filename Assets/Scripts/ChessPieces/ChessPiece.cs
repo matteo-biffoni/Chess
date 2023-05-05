@@ -24,7 +24,22 @@ namespace ChessPieces
 
         private Vector3 _desiredPosition;
         private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
-        private uint _hp = 2;
+        private uint _hp = 100;
+
+        public virtual List<Vector2Int> GetSpecialAttack1Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            return null;
+        }
+        
+        public virtual List<Vector2Int> GetSpecialAttack2Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            return null;
+        }
+        
+        public virtual List<Vector2Int> GetSpecialAttack3Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            return null;
+        }
 
         public void DamagePiece()
         {
@@ -45,6 +60,11 @@ namespace ChessPieces
         {
             return _hp == 0;
         }
+
+        /*public virtual int ComputeDamageInPath(Vector2Int from, Vector2Int to, bool[,] fired)
+        {
+            return -1;
+        }*/
         
         private static string ChessPieceTypeToString(ChessPieceType cpt)
         {
@@ -74,6 +94,7 @@ namespace ChessPieces
 
         private void Update()
         {
+            if (Confrontation.GetCurrentAttacking() != null) return;
             Transform tr;
             (tr = transform).position = Vector3.Lerp(transform.position, _desiredPosition, Time.deltaTime * 10f);
             transform.localScale = Vector3.Lerp(tr.localScale, _desiredScale, Time.deltaTime * 10f);
@@ -106,6 +127,23 @@ namespace ChessPieces
             _desiredPosition = position;
             if (force)
                 transform.position = _desiredPosition;
+        }
+
+        public virtual void SetConfrontationAim(Vector3 position)
+        {
+            StartCoroutine(ReachAimInXSeconds(position, 0.2f));
+        }
+
+        private IEnumerator ReachAimInXSeconds(Vector3 position, float seconds)
+        {
+            var currentPos = transform.position;
+            var t = 0f;
+            while(t < 1)
+            {
+                t += Time.deltaTime / seconds;
+                transform.position = Vector3.Lerp(currentPos, position, t);
+                yield return null;
+            }
         }
 
         public IEnumerator SetPositionAfterSeconds(Vector3 position, int seconds)

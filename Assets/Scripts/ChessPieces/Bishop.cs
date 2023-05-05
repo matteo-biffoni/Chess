@@ -55,6 +55,16 @@ namespace ChessPieces
             return r;
         }
 
+        /*public override int ComputeDamageInPath(Vector2Int from, Vector2Int to, bool[,] fired)
+        {
+            var counter = 0;
+            for (var i = Mathf.Min(from.x, to.x); i <= Mathf.Max(from.x, to.x); i++)
+                for (var j = Mathf.Min(from.y, to.y); j <= Mathf.Max(from.y, to.y); j++)
+                    if (fired[i, j])
+                        counter++;
+            return counter;
+        }*/
+
         public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();
