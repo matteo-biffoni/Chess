@@ -60,11 +60,6 @@ namespace ChessPieces
         {
             return _hp == 0;
         }
-
-        /*public virtual int ComputeDamageInPath(Vector2Int from, Vector2Int to, bool[,] fired)
-        {
-            return -1;
-        }*/
         
         private static string ChessPieceTypeToString(ChessPieceType cpt)
         {

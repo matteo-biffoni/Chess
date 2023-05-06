@@ -55,16 +55,6 @@ namespace ChessPieces
             return r;
         }
 
-        /*public override int ComputeDamageInPath(Vector2Int from, Vector2Int to, bool[,] fired)
-        {
-            var counter = 0;
-            for (var i = Mathf.Min(from.x, to.x); i <= Mathf.Max(from.x, to.x); i++)
-                for (var j = Mathf.Min(from.y, to.y); j <= Mathf.Max(from.y, to.y); j++)
-                    if (fired[i, j])
-                        counter++;
-            return counter;
-        }*/
-
         public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();
@@ -76,6 +66,27 @@ namespace ChessPieces
                 r.Add(new Vector2Int(x, y));
             for (int x = CurrentX - 1, y = CurrentY - 1; x >= 0 && y >= 0; x--, y--)
                 r.Add(new Vector2Int(x, y));
+            return r;
+        }
+
+        public override List<Vector2Int> GetSpecialAttack1Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            for (int x = cell.x + 1, y = cell.y + 1; x < tileCountX && y < tileCountY; x++, y++) 
+                r.Add(new Vector2Int(x, y));
+            for (int x = cell.x - 1, y = cell.y - 1; x >= 0 && y >= 0; x--, y--)
+                r.Add(new Vector2Int(x, y));
+            return r;
+        }
+
+        public override List<Vector2Int> GetSpecialAttack2Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            for (int x = cell.x - 1, y = cell.y + 1; x >= 0 && y < tileCountY; x--, y++)
+                r.Add(new Vector2Int(x, y));
+            for (int x = cell.x + 1, y = cell.y - 1; x < tileCountX && y >= 0; x++, y--)
+                r.Add(new Vector2Int(x, y));
+            r.Add(new Vector2Int(cell.x, cell.y));
             return r;
         }
     }

@@ -29,16 +29,6 @@ namespace ChessPieces
             return r;
         }
 
-        /*public override int ComputeDamageInPath(Vector2Int from, Vector2Int to, bool[,] fired)
-        {
-            var counter = 0;
-            if (fired[from.x, from.y])
-                counter++;
-            if (fired[to.x, from.y])
-                counter++;
-            return counter;
-        }*/
-
         public override List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();

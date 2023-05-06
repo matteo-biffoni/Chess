@@ -224,7 +224,6 @@ public class ChessBoardConfrontation : MonoBehaviour
     private void SpecialAttack2(Vector2Int cell)
     {
         if (_attacking.Type is ChessPieceType.Pawn or ChessPieceType.None) return;
-        _attacking.GetSpecialAttack2Cells(cell, TileCountX, TileCountY);
         foreach (var firedCell in _attacking.GetSpecialAttack2Cells(cell, TileCountX, TileCountY))
             FireCell(firedCell);
     }
@@ -233,8 +232,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     private void SpecialAttack3(Vector2Int cell)
     {
         if (_attacking.Type != ChessPieceType.Queen) return;
-        _attacking.GetSpecialAttack3Cells(cell, TileCountX, TileCountY);
-        foreach (var firedCell in _attacking.GetSpecialAttack1Cells(cell, TileCountX, TileCountY))
+        foreach (var firedCell in _attacking.GetSpecialAttack3Cells(cell, TileCountX, TileCountY))
             FireCell(firedCell);
     }
 
