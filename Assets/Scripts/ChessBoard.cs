@@ -110,6 +110,7 @@ public class ChessBoard : MonoBehaviour
             {
                 _currentHover = hitPosition;
                 _tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
+                if (_chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[hitPosition.x, hitPosition.y].HpVisibility(true);
             }
 
             if (_currentHover != hitPosition)
@@ -117,8 +118,10 @@ public class ChessBoard : MonoBehaviour
                 _tiles[_currentHover.x, _currentHover.y].layer = ContainsValidMove(ref _availableMoves, _currentHover)
                     ? LayerMask.NameToLayer("Highlight")
                     : LayerMask.NameToLayer("Tile");
+                if (_currentHover != null && _currentHover != -Vector2Int.one && _chessPieces[_currentHover.x, _currentHover.y] != null && _chessPieces[_currentHover.x, _currentHover.y] != _currentlyDragging) _chessPieces[_currentHover.x, _currentHover.y].HpVisibility(false);
                 _currentHover = hitPosition;
                 _tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
+                if (_chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[hitPosition.x, hitPosition.y].HpVisibility(true);
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -224,6 +227,7 @@ public class ChessBoard : MonoBehaviour
                 _tiles[_currentHover.x, _currentHover.y].layer = ContainsValidMove(ref _availableMoves, _currentHover)
                     ? LayerMask.NameToLayer("Highlight")
                     : LayerMask.NameToLayer("Tile");
+                if (_currentlyDragging == null && _chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[_currentHover.x, _currentHover.y].HpVisibility(false);
                 _currentHover = -Vector2Int.one;
             }
 
@@ -277,7 +281,7 @@ public class ChessBoard : MonoBehaviour
                 if (_localGame)
                 {
                     _currentTeam = _currentTeam == 0 ? 1 : 0;
-                    GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
+                    GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
                 }
                 break;
             case Outcome.Success:
@@ -479,7 +483,7 @@ public class ChessBoard : MonoBehaviour
         if (_localGame)
         {
             _currentTeam = 0;
-            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
+            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
             
         }
 
@@ -778,7 +782,7 @@ public class ChessBoard : MonoBehaviour
         if (_localGame)
         {
             _currentTeam = _currentTeam == 0 ? 1 : 0;
-            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1);
+            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
         }
         _moveList.Add(new [] { previousPosition, new (x, y)});
         MovesUI.AddMove(new ChessMove(cp.Team, cp.Type, previousPosition, new Vector2Int(x, y), killed != ChessPieceType.None, killed, true));
@@ -884,7 +888,7 @@ public class ChessBoard : MonoBehaviour
     }
     private void OnStartGameClient(NetMessage msg)
     {
-        GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam);
+        GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
     private void OnMakeMoveClient(NetMessage msg)
     {

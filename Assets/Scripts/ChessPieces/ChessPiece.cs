@@ -26,6 +26,8 @@ namespace ChessPieces
         private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
         private uint _hp = 100;
 
+        private GameObject _hpTextMesh;
+
         public virtual List<Vector2Int> GetSpecialAttack1Cells(Vector2Int cell, int tileCountX, int tileCountY)
         {
             return null;
@@ -60,6 +62,17 @@ namespace ChessPieces
         {
             return _hp == 0;
         }
+
+        public bool IsHpLabelVisible()
+        {
+            return _hpTextMesh.activeSelf;
+        }
+
+        public void HpVisibility(bool value)
+        {
+            if (value) _hpTextMesh.GetComponentInChildren<TextMesh>().text = _hp.ToString();
+            _hpTextMesh.SetActive(value);
+        }
         
         private static string ChessPieceTypeToString(ChessPieceType cpt)
         {
@@ -84,6 +97,8 @@ namespace ChessPieces
 
         private void Start()
         {
+            _hpTextMesh = GetComponentInChildren<TextMesh>().gameObject;
+            _hpTextMesh.SetActive(false);
             transform.rotation = Quaternion.Euler(Team == 0 ? new Vector3(0, 90, 0) : new Vector3(0, 270, 0));
         }
 
