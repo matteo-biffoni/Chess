@@ -86,6 +86,7 @@ namespace Net
             while ((c = _driver.Accept()) != default)
             {
                 _connections.Add(c);
+                Debug.Log("Received connection");
             }
         }
         private void UpdateMessagePump()

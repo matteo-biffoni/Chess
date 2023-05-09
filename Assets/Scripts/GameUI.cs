@@ -8,6 +8,7 @@ using Net.NetMessages;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum CameraAngle
 {
@@ -23,6 +24,10 @@ public class GameUI : MonoBehaviour
     public Server Server;
     public Client Client;
 
+    [SerializeField] private Toggle FullBoardToggle;
+    [SerializeField] private GameObject PartialBoardGo;
+    [SerializeField] private Toggle MiniGameToggle;
+    [SerializeField] private Toggle NumberOfTurnsToggle;
     [SerializeField] private GameObject MainCamera;
     [SerializeField] private GameObject EventSystem;
     [SerializeField] private ChessBoard ChessBoard;
@@ -32,11 +37,12 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject[] CameraAngles;
     public Action<bool> SetLocalGame;
     private static readonly int InGameMenu = Animator.StringToHash("InGameMenu");
-    private static readonly int OnlineMenu = Animator.StringToHash("OnlineMenu");
     private static readonly int HostMenu = Animator.StringToHash("HostMenu");
     private static readonly int StartMenu = Animator.StringToHash("StartMenu");
+    private static readonly int WaitingMenu = Animator.StringToHash("WaitingMenu");
+    private static readonly int FindAMatchMenu = Animator.StringToHash("FindMenu");
     private bool _confrontationHandled = true;
-    private bool _localGame;
+    //private bool _localGame;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
@@ -44,6 +50,10 @@ public class GameUI : MonoBehaviour
     {
         Instance = this;
         RegisterEvents();
+        FullBoardToggle.onValueChanged.AddListener(delegate
+        {
+            PartialBoardGo.SetActive(!FullBoardToggle.isOn);
+        });
     }
 
     private void Update()
@@ -79,7 +89,7 @@ public class GameUI : MonoBehaviour
                 parent = Cameras
             }
         };
-        if (_localGame)
+        /*if (_localGame)
         {
             newCamera.transform.position = defender.Team switch
             {
@@ -88,7 +98,7 @@ public class GameUI : MonoBehaviour
                 _ => newCamera.transform.position
             };
         }
-        else
+        else*/
         {
             foreach (var cameraAngle in CameraAngles)
             {
@@ -118,7 +128,7 @@ public class GameUI : MonoBehaviour
         _cameraBeforeConfrontation.gameObject.SetActive(false);
         var prevCamera = CameraAngles.FirstOrDefault(cameraAngle => cameraAngle.transform.position == _cameraBeforeConfrontation.transform.position);
         _cameraBeforeConfrontation = null;
-        if (_localGame)
+        /*if (_localGame)
             switch (Confrontation.GetCurrentAttacking().Team)
             {
                 case 0:
@@ -128,7 +138,7 @@ public class GameUI : MonoBehaviour
                     CameraAngles[2].SetActive(true);
                     break;
             }
-        else if (prevCamera != null) 
+        else */if (prevCamera != null) 
             prevCamera.SetActive(true);
         Confrontation.ResetConfrontation();
     }
@@ -186,41 +196,48 @@ public class GameUI : MonoBehaviour
                 break;
         }
     }
-    public void OnLocalGameButton()
+    /*public void OnLocalGameButton()
     {
         MenuAnimator.SetTrigger(InGameMenu);
-        SetLocalGame?.Invoke(true);
-        _localGame = true;
+        //SetLocalGame?.Invoke(true);
+        //_localGame = true;
         Server.Init(8007);
         Client.Init("127.0.0.1", 8007);
-    }
-    public void OnOnlineGameButton()
+    }*/
+    public void OnHostMenuButton()
     {
-        MenuAnimator.SetTrigger(OnlineMenu);
+        MenuAnimator.SetTrigger(HostMenu);
     }
-    public void OnOnlineHostButton()
+
+    public void OnFindMenuButton()
     {
+        MenuAnimator.SetTrigger(FindAMatchMenu);
+    }
+    public void OnHostHostButton()
+    {
+        //MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, 0, MiniGameToggle.isOn, NumberOfTurnsToggle.isOn);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
-        _localGame = false;
+        //_localGame = false;
         Client.Init("127.0.0.1", 8007);
-        MenuAnimator.SetTrigger(HostMenu);
+        MenuAnimator.SetTrigger(WaitingMenu);
     }
     public void OnOnlineConnectButton()
     {
         SetLocalGame?.Invoke(false);
-        _localGame = false;
+        //_localGame = false;
+        //MatchConfiguration.SetGameUIConfigurationP2(DispositionType.NotEmpty);
         Client.Init(AddressInput.text, 8007);
     }
-    public void OnOnlineBackButton()
+    public void BackOnMainMenu()
     {
         MenuAnimator.SetTrigger(StartMenu);
     }
-    public void OnHostBackButton()
+    public void OnWaitingBackButton()
     {
         Server.Shutdown();
         Client.Shutdown();
-        MenuAnimator.SetTrigger(OnlineMenu);
+        MenuAnimator.SetTrigger(HostMenu);
     }
     public void OnLeaveFromGameMenu()
     {

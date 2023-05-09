@@ -62,11 +62,15 @@ namespace Net
         private void UpdateMessagePump()
         {
             NetworkEvent.Type cmd;
-            while((cmd = _connection.PopEvent(_driver, out var stream)) != NetworkEvent.Type.Empty) {
+            while((cmd = _connection.PopEvent(_driver, out var stream)) != NetworkEvent.Type.Empty)
+            {
                 // ReSharper disable once ConvertIfStatementToSwitchStatement
                 if (cmd == NetworkEvent.Type.Connect)
                 {
-                    SendToServer(new NetWelcome());
+                    SendToServer(new NetWelcome
+                    {
+                        //MatchConfiguration = MatchConfiguration.GetGameUIConfiguration()
+                    });
                 }
                 else if (cmd == NetworkEvent.Type.Data)
                 {
