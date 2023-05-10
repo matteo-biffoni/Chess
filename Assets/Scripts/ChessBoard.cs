@@ -63,6 +63,7 @@ public class ChessBoard : MonoBehaviour
     [Header("Link with other scripts and logic")]
     [SerializeField] private MovesUI MovesUI;
     [SerializeField] private bool FightWithConfrontation = true;
+    [SerializeField] private bool TwoMoves = true;
 
     [SerializeField] private TMP_Text FullBoardText;
     [SerializeField] private TMP_Text DispositionAttackingText;
@@ -97,6 +98,8 @@ public class ChessBoard : MonoBehaviour
     private readonly bool[] _configurationSetup = new bool[2];
     private bool _setupDone;
 
+    private uint _movesInTurn = 0;
+
     private void Start()
     {
         _isWhiteTurn = true;
@@ -113,6 +116,7 @@ public class ChessBoard : MonoBehaviour
         PositionAllPieces();
         _setupDone = true;
         FightWithConfrontation = MatchConfiguration.MiniGame;
+        TwoMoves = MatchConfiguration.Turns;
         yield return new WaitForSeconds(0.5f);
         GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
@@ -801,7 +805,17 @@ public class ChessBoard : MonoBehaviour
         _chessPieces[x, y] = cp;
         _chessPieces[previousPosition.x, previousPosition.y] = null;
         PositionSinglePiece(x, y);
-        _isWhiteTurn = !_isWhiteTurn;
+        _movesInTurn++;
+        switch (TwoMoves)
+        {
+            case true when _movesInTurn == 2 || (_movesInTurn == 1 && _moveList.Count == 0):
+                _isWhiteTurn = !_isWhiteTurn;
+                _movesInTurn = 0;
+                break;
+            case false:
+                _isWhiteTurn = !_isWhiteTurn;
+                break;
+        }
         /*if (_localGame)
         {
             _currentTeam = _currentTeam == 0 ? 1 : 0;
