@@ -24,7 +24,7 @@ namespace ChessPieces
 
         private Vector3 _desiredPosition;
         private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
-        private uint _hp = 100;
+        private uint _hp = 50;
 
         private GameObject _hpTextMesh;
 

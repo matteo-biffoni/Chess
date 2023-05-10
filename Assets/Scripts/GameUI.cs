@@ -25,7 +25,7 @@ public class GameUI : MonoBehaviour
     public Client Client;
 
     [SerializeField] private Toggle FullBoardToggle;
-    [SerializeField] private GameObject PartialBoardGo;
+    [SerializeField] private GameObject PartialBoardPanel;
     [SerializeField] private Toggle MiniGameToggle;
     [SerializeField] private Toggle NumberOfTurnsToggle;
     [SerializeField] private GameObject MainCamera;
@@ -42,6 +42,10 @@ public class GameUI : MonoBehaviour
     private static readonly int WaitingMenu = Animator.StringToHash("WaitingMenu");
     private static readonly int FindAMatchMenu = Animator.StringToHash("FindMenu");
     private bool _confrontationHandled = true;
+    private DispositionType _selectedAttackingDisposition = DispositionType.None;
+    private DispositionType _selectedDefendingDisposition = DispositionType.None;
+    [SerializeField] private Button[] DispositionButtonsAttacking;
+    [SerializeField] private Button[] DispositionButtonsDefending;
     //private bool _localGame;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
@@ -52,8 +56,51 @@ public class GameUI : MonoBehaviour
         RegisterEvents();
         FullBoardToggle.onValueChanged.AddListener(delegate
         {
-            PartialBoardGo.SetActive(!FullBoardToggle.isOn);
+            PartialBoardPanel.SetActive(!FullBoardToggle.isOn);
+            if (!FullBoardToggle.isOn) {
+                SelectAttackingDisposition(DispositionType.Heavy);
+                ScaleButtons(DispositionButtonsAttacking[0]);
+            }
+            else
+            {
+                SelectAttackingDisposition(DispositionType.None);
+                ScaleButtons(null);
+            }
         });
+        for(var i = 0; i < DispositionButtonsAttacking.Length; i++)
+        {
+            var disposition = (DispositionType)(i+1);
+            var buttonAttacking = DispositionButtonsAttacking[i];
+            var buttonDefending = DispositionButtonsDefending[i];
+            buttonAttacking.onClick.AddListener(delegate
+            {
+                SelectAttackingDisposition(disposition);
+                ScaleButtons(buttonAttacking);
+            });
+            buttonDefending.onClick.AddListener(delegate
+            {
+                SelectDefendingDisposition(disposition);
+                ScaleButtons(buttonDefending);
+            });
+        }
+    }
+
+    private void ScaleButtons(Button highlighted)
+    {
+        foreach (var button in DispositionButtonsAttacking)
+            button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
+        foreach (var button in DispositionButtonsDefending)
+            button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
+    }
+
+    private void SelectAttackingDisposition(DispositionType dispositionType)
+    {
+        _selectedAttackingDisposition = dispositionType;
+    }
+
+    private void SelectDefendingDisposition(DispositionType dispositionType)
+    {
+        _selectedDefendingDisposition = dispositionType;
     }
 
     private void Update()
@@ -207,15 +254,19 @@ public class GameUI : MonoBehaviour
     public void OnHostMenuButton()
     {
         MenuAnimator.SetTrigger(HostMenu);
+        SelectAttackingDisposition(DispositionType.Heavy);
+        ScaleButtons(DispositionButtonsAttacking[0]);
     }
 
     public void OnFindMenuButton()
     {
         MenuAnimator.SetTrigger(FindAMatchMenu);
+        SelectDefendingDisposition(DispositionType.Heavy);
+        ScaleButtons(DispositionButtonsDefending[0]);
     }
     public void OnHostHostButton()
     {
-        MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, 0, NumberOfTurnsToggle.isOn, MiniGameToggle.isOn);
+        MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, _selectedAttackingDisposition, NumberOfTurnsToggle.isOn, MiniGameToggle.isOn);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
         //_localGame = false;
@@ -226,7 +277,7 @@ public class GameUI : MonoBehaviour
     {
         SetLocalGame?.Invoke(false);
         //_localGame = false;
-        MatchConfiguration.SetGameUIConfigurationP2(DispositionType.NotEmpty);
+        MatchConfiguration.SetGameUIConfigurationP2(_selectedDefendingDisposition);
         Client.Init(AddressInput.text, 8007);
     }
     public void BackOnMainMenu()

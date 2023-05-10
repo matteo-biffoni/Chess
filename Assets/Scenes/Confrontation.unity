@@ -919,6 +919,9 @@ MonoBehaviour:
   YOffset: 0.101
   BoardCenter: {x: 0, y: 0, z: 10}
   NormalAttackInterval: 1
+  SpecialAttack1Interval: 3
+  SpecialAttack2Interval: 3
+  SpecialAttack3Interval: 10
   Prefabs:
   - {fileID: 4842291578653785954, guid: e868830d996d8cc4d801487ae4e22458, type: 3}
   - {fileID: 2625928462256589305, guid: 33bcf24d174912149affb1c86bcb13b2, type: 3}
@@ -940,6 +943,10 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 807024ba26e564c4fa6d05867a4340f5, type: 2}
   - {fileID: 2100000, guid: 2e26e7355cb8eb6479d6040df25d25f1, type: 2}
   - {fileID: 2100000, guid: 2dc5def924881204fb5cdb832267b3f7, type: 2}
-  MiniGameDuration: 60
+  MiniGameDuration: 15
   TimerText: {fileID: 263032935}
   DefendingHpText: {fileID: 59766000}
+  FireDuration: 3
+  SpecialAttack1Key: 49
+  SpecialAttack2Key: 50
+  SpecialAttack3Key: 51

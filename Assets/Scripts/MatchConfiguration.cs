@@ -74,14 +74,6 @@ public class MatchConfiguration
         {
             chessBoard.MatchConfiguration.DispositionDefending = dispositionDefending;
         }
-        Debug.Log($"Chessboard configuration from p2: {chessBoard.MatchConfiguration}");
-    }
-
-    public string ToStringReduced()
-    {
-        var turns = Turns ? "2" : "1";
-        return Attacking ? $"FullBoard: {FullBoard}, Disposition attacking: {DispositionAttacking}, Turns: {turns}, Minigame: {MiniGame}" : $"DispositionDefending: {DispositionDefending}";
-
     }
 
     public override string ToString()
@@ -116,7 +108,9 @@ public class MatchConfiguration
 public enum DispositionType
 {
     None = 0,
-    NotEmpty = 1
+    Heavy = 1,
+    Medium = 2,
+    Light = 3
 }
 
 public class ChessBoardDisposition
