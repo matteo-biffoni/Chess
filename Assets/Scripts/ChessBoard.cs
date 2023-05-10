@@ -5,6 +5,7 @@ using System.Linq;
 using ChessPieces;
 using Net;
 using Net.NetMessages;
+using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,6 +63,12 @@ public class ChessBoard : MonoBehaviour
     [Header("Link with other scripts and logic")]
     [SerializeField] private MovesUI MovesUI;
     [SerializeField] private bool FightWithConfrontation = true;
+
+    [SerializeField] private TMP_Text FullBoardText;
+    [SerializeField] private TMP_Text DispositionAttackingText;
+    [SerializeField] private TMP_Text DispositionDefendingText;
+    [SerializeField] private TMP_Text OneMoveTurnText;
+    [SerializeField] private TMP_Text MiniGameText;
     
     // Logic
     private ChessPiece[,] _chessPieces;
@@ -85,7 +92,7 @@ public class ChessBoard : MonoBehaviour
     private readonly bool[] _playerRematch = new bool[2];
     private bool _confrontationHandled = true;
 
-    public static MatchConfiguration MatchConfiguration = MatchConfiguration.GetDefault();
+    public static MatchConfiguration MatchConfiguration;
 
     private void Start()
     {
@@ -805,12 +812,14 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SRematch += OnRematchServer;
         NetUtility.SCreateConfrontation += OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation += OnResolveConfrontationServer;
+        NetUtility.SMatchConfiguration += OnMatchConfigurationServer;
         NetUtility.CWelcome += OnWelcomeClient;
         NetUtility.CStartGame += OnStartGameClient;
         NetUtility.CMakeMove += OnMakeMoveClient;
         NetUtility.CRematch += OnRematchClient;
         NetUtility.CCreateConfrontation += OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation += OnResolveConfrontationClient;
+        NetUtility.CMatchConfiguration += OnMatchConfigurationClient;
         GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
     // ReSharper disable once UnusedMember.Local
@@ -821,13 +830,25 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SRematch -= OnRematchServer;
         NetUtility.SCreateConfrontation -= OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation -= OnResolveConfrontationServer;
+        NetUtility.SMatchConfiguration -= OnMatchConfigurationServer;
         NetUtility.CWelcome -= OnWelcomeClient;
         NetUtility.CStartGame -= OnStartGameClient;
         NetUtility.CMakeMove -= OnMakeMoveClient;
         NetUtility.CRematch -= OnRematchClient;
         NetUtility.CCreateConfrontation -= OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation -= OnResolveConfrontationClient;
+        NetUtility.CMatchConfiguration -= OnMatchConfigurationClient;
         GameUI.Instance.SetLocalGame -= OnSetLocalGame;
+    }
+
+    private void OnMatchConfigurationServer(NetMessage msg, NetworkConnection cnn)
+    {
+        if (msg is not NetMatchConfiguration nmc)
+        {
+            Debug.LogError("[S] Could not cast NetMessage to NetMatchConfiguration");
+            return;
+        }
+        Server.Instance.Broadcast(nmc);
     }
     private void OnWelcomeServer(NetMessage msg, NetworkConnection cnn)
     {
@@ -840,8 +861,8 @@ public class ChessBoard : MonoBehaviour
         /*nw.MatchConfiguration = nw.MatchConfiguration == null
             ? MatchConfiguration.GetGameUIConfiguration()
             : MatchConfiguration.GetDifferenceFromConf(MatchConfiguration.GetGameUIConfiguration(), nw.MatchConfiguration);*/
-        //Server.Instance.SendToClient(cnn, nw);
-        Server.Instance.Broadcast(nw);
+        Server.Instance.SendToClient(cnn, nw);
+        //Server.Instance.Broadcast(nw);
         if (_playerCount == 1)
             Server.Instance.Broadcast(new NetStartGame());
     }
@@ -900,8 +921,58 @@ public class ChessBoard : MonoBehaviour
             Server.Instance.Broadcast(new NetStartGame());
         }*/
     }
+
+    private void OnMatchConfigurationClient(NetMessage msg)
+    {
+        if (msg is not NetMatchConfiguration nmc)
+        {
+            Debug.LogError("[C] Could not cast NetMessage to NetMatchConfiguration");
+            return;
+        }
+        var conf = nmc.MatchConfiguration;
+        if (conf.Attacking)
+        {
+            MatchConfiguration.SetChessboardFromPlayer1(conf.FullBoard, conf.DispositionAttacking,
+                conf.Turns, conf.MiniGame);
+            var fullBoardT = conf.FullBoard ? "Yes" : "No";
+            var attackingDT = conf.DispositionAttacking == DispositionType.None ? "None" : "NotEmpty";
+            var turnsT = conf.Turns ? "2" : "1";
+            var miniGameT = conf.MiniGame ? "Yes" : "No";
+            FullBoardText.text = $"Fullboard: {fullBoardT}";
+            if (!conf.FullBoard)
+            {
+                DispositionAttackingText.gameObject.SetActive(true);
+                DispositionDefendingText.gameObject.SetActive(true);
+                DispositionAttackingText.text = $"Attacking: {attackingDT}";
+            }
+            else
+            {
+                DispositionAttackingText.gameObject.SetActive(false);
+                DispositionDefendingText.gameObject.SetActive(false);
+            }
+            OneMoveTurnText.text = $"Moves per turn: {turnsT}";
+            MiniGameText.text = $"Minigame: {miniGameT}";
+        }
+        else
+        {
+            MatchConfiguration.SetChessboardFromPlayer2(conf.DispositionDefending);
+            var defendingDT = conf.DispositionDefending == DispositionType.None ? "None" : "NotEmpty";
+            DispositionDefendingText.text = $"Defending: {defendingDT}";
+        }
+    }
     private void OnStartGameClient(NetMessage msg)
     {
+        if (msg is not NetStartGame nsg)
+        {
+            Debug.LogError("[C] Could not cast NetMessage to NetStartGame");
+            return;
+        }
+        Debug.Log("On start game client");
+        var myConf = MatchConfiguration.GetGameUIConfiguration();
+        Client.Instance.SendToServer(new NetMatchConfiguration
+        {
+            MatchConfiguration = myConf
+        });
         GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
     private void OnMakeMoveClient(NetMessage msg)

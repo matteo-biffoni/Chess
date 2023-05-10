@@ -6,38 +6,26 @@ public class MatchConfiguration
 {
     public bool Attacking;
     public bool FullBoard;
-    public DispositionType DispositionAttacking;
-    public DispositionType DispositionDefending;
-    public bool OneMoveTurn;
-    public bool MiniGame;
+    public DispositionType DispositionAttacking = DispositionType.None;
+    public DispositionType DispositionDefending = DispositionType.None;
+    public bool Turns;
+    public bool MiniGame = true;
 
-    private static MatchConfiguration _fromGameUI = GetDefault();
-
-    public static MatchConfiguration GetDefault()
-    {
-        return new MatchConfiguration
-        {
-            FullBoard = false,
-            DispositionAttacking = DispositionType.None,
-            DispositionDefending = DispositionType.None,
-            OneMoveTurn = true,
-            MiniGame = true
-        };
-    }
+    private static MatchConfiguration _fromGameUI;
 
     public static MatchConfiguration GetGameUIConfiguration()
     {
         return _fromGameUI;
     }
 
-    public static void SetGameUIConfigurationP1(bool fullBoard, DispositionType dispositionAttacking, bool oneMoveTurn, bool miniGame)
+    public static void SetGameUIConfigurationP1(bool fullBoard, DispositionType dispositionAttacking, bool turns, bool miniGame)
     {
         _fromGameUI = new MatchConfiguration
         {
             Attacking = true,
             FullBoard = fullBoard,
             DispositionAttacking = dispositionAttacking,
-            OneMoveTurn = oneMoveTurn,
+            Turns = turns,
             MiniGame = miniGame
         };
     }
@@ -51,26 +39,55 @@ public class MatchConfiguration
         };
     }
 
-    public static void SetChessboardFromPlayer1(bool fullBoard, DispositionType dispositionAttacking, bool oneMoveTurn,
+    public static void SetChessboardFromPlayer1(bool fullBoard, DispositionType dispositionAttacking, bool turns,
         bool miniGame)
     {
-        ChessBoard.MatchConfiguration.FullBoard = fullBoard;
-        ChessBoard.MatchConfiguration.DispositionAttacking = dispositionAttacking;
-        ChessBoard.MatchConfiguration.OneMoveTurn = oneMoveTurn;
-        ChessBoard.MatchConfiguration.MiniGame = miniGame;
-        Debug.Log($"Chessboard configuration from p1: {ChessBoard.MatchConfiguration}");
+        if (ChessBoard.MatchConfiguration == null)
+        {
+            ChessBoard.MatchConfiguration = new MatchConfiguration
+            {
+                FullBoard = fullBoard,
+                DispositionAttacking = dispositionAttacking,
+                Turns = turns,
+                MiniGame = miniGame
+            };
+        }
+        else
+        {
+            ChessBoard.MatchConfiguration.FullBoard = fullBoard;
+            ChessBoard.MatchConfiguration.DispositionAttacking = dispositionAttacking;
+            ChessBoard.MatchConfiguration.Turns = turns;
+            ChessBoard.MatchConfiguration.MiniGame = miniGame;
+        }
     }
 
     public static void SetChessboardFromPlayer2(DispositionType dispositionDefending)
     {
-        ChessBoard.MatchConfiguration.DispositionDefending = dispositionDefending;
+        if (ChessBoard.MatchConfiguration == null)
+        {
+            ChessBoard.MatchConfiguration = new MatchConfiguration
+            {
+                DispositionDefending = dispositionDefending
+            };
+        }
+        else
+        {
+            ChessBoard.MatchConfiguration.DispositionDefending = dispositionDefending;
+        }
         Debug.Log($"Chessboard configuration from p2: {ChessBoard.MatchConfiguration}");
+    }
+
+    public string ToStringReduced()
+    {
+        var turns = Turns ? "2" : "1";
+        return Attacking ? $"FullBoard: {FullBoard}, Disposition attacking: {DispositionAttacking}, Turns: {turns}, Minigame: {MiniGame}" : $"DispositionDefending: {DispositionDefending}";
+
     }
 
     public override string ToString()
     {
-        return
-            $"Attacking: {Attacking}, FullBoard: {FullBoard}, Disposition attacking: {DispositionAttacking}, DispositionDefending: {DispositionDefending}, Minigame: {MiniGame}, One move turn: {OneMoveTurn}";
+        var turns = Turns ? "2" : "1";
+        return $"Attacking: {Attacking}, FullBoard: {FullBoard}, Disposition attacking: {DispositionAttacking}, DispositionDefending: {DispositionDefending}, Turns: {turns}, Minigame: {MiniGame}";
     }
 
     public static MatchConfiguration GetDifferenceFromConf(MatchConfiguration conf1, MatchConfiguration conf2)
@@ -81,16 +98,16 @@ public class MatchConfiguration
             r.FullBoard = conf2.FullBoard;
             r.DispositionAttacking = conf2.DispositionAttacking;
             r.DispositionDefending = conf1.DispositionDefending;
+            r.Turns = conf2.Turns;
             r.MiniGame = conf2.MiniGame;
-            r.OneMoveTurn = conf2.OneMoveTurn;
         }
         else if (conf2.DispositionDefending != DispositionType.None)
         {
             r.FullBoard = conf1.FullBoard;
             r.DispositionAttacking = conf1.DispositionAttacking;
             r.DispositionDefending = conf2.DispositionDefending;
+            r.Turns = conf1.Turns;
             r.MiniGame = conf1.MiniGame;
-            r.OneMoveTurn = conf1.OneMoveTurn;
         }
         return r;
     }

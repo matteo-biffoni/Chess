@@ -215,7 +215,7 @@ public class GameUI : MonoBehaviour
     }
     public void OnHostHostButton()
     {
-        //MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, 0, MiniGameToggle.isOn, NumberOfTurnsToggle.isOn);
+        MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, 0, NumberOfTurnsToggle.isOn, MiniGameToggle.isOn);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
         //_localGame = false;
@@ -226,7 +226,7 @@ public class GameUI : MonoBehaviour
     {
         SetLocalGame?.Invoke(false);
         //_localGame = false;
-        //MatchConfiguration.SetGameUIConfigurationP2(DispositionType.NotEmpty);
+        MatchConfiguration.SetGameUIConfigurationP2(DispositionType.NotEmpty);
         Client.Init(AddressInput.text, 8007);
     }
     public void BackOnMainMenu()
