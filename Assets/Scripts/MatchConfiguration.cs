@@ -39,12 +39,12 @@ public class MatchConfiguration
         };
     }
 
-    public static void SetChessboardFromPlayer1(bool fullBoard, DispositionType dispositionAttacking, bool turns,
+    public static void SetChessboardFromPlayer1(ChessBoard chessBoard, bool fullBoard, DispositionType dispositionAttacking, bool turns,
         bool miniGame)
     {
-        if (ChessBoard.MatchConfiguration == null)
+        if (chessBoard.MatchConfiguration == null)
         {
-            ChessBoard.MatchConfiguration = new MatchConfiguration
+            chessBoard.MatchConfiguration = new MatchConfiguration
             {
                 FullBoard = fullBoard,
                 DispositionAttacking = dispositionAttacking,
@@ -54,27 +54,27 @@ public class MatchConfiguration
         }
         else
         {
-            ChessBoard.MatchConfiguration.FullBoard = fullBoard;
-            ChessBoard.MatchConfiguration.DispositionAttacking = dispositionAttacking;
-            ChessBoard.MatchConfiguration.Turns = turns;
-            ChessBoard.MatchConfiguration.MiniGame = miniGame;
+            chessBoard.MatchConfiguration.FullBoard = fullBoard;
+            chessBoard.MatchConfiguration.DispositionAttacking = dispositionAttacking;
+            chessBoard.MatchConfiguration.Turns = turns;
+            chessBoard.MatchConfiguration.MiniGame = miniGame;
         }
     }
 
-    public static void SetChessboardFromPlayer2(DispositionType dispositionDefending)
+    public static void SetChessboardFromPlayer2(ChessBoard chessBoard, DispositionType dispositionDefending)
     {
-        if (ChessBoard.MatchConfiguration == null)
+        if (chessBoard.MatchConfiguration == null)
         {
-            ChessBoard.MatchConfiguration = new MatchConfiguration
+            chessBoard.MatchConfiguration = new MatchConfiguration
             {
                 DispositionDefending = dispositionDefending
             };
         }
         else
         {
-            ChessBoard.MatchConfiguration.DispositionDefending = dispositionDefending;
+            chessBoard.MatchConfiguration.DispositionDefending = dispositionDefending;
         }
-        Debug.Log($"Chessboard configuration from p2: {ChessBoard.MatchConfiguration}");
+        Debug.Log($"Chessboard configuration from p2: {chessBoard.MatchConfiguration}");
     }
 
     public string ToStringReduced()

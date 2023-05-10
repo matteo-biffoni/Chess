@@ -92,15 +92,29 @@ public class ChessBoard : MonoBehaviour
     private readonly bool[] _playerRematch = new bool[2];
     private bool _confrontationHandled = true;
 
-    public static MatchConfiguration MatchConfiguration;
+    public MatchConfiguration MatchConfiguration;
+    
+    private readonly bool[] _configurationSetup = new bool[2];
+    private bool _setupDone;
 
     private void Start()
     {
         _isWhiteTurn = true;
+        //GenerateAllTiles(TileSize, TileCountX, TileCountY);
+        //SpawnAllPieces();
+        //PositionAllPieces();
+        RegisterEvents();
+    }
+
+    private IEnumerator Setup()
+    {
         GenerateAllTiles(TileSize, TileCountX, TileCountY);
         SpawnAllPieces();
         PositionAllPieces();
-        RegisterEvents();
+        _setupDone = true;
+        FightWithConfrontation = MatchConfiguration.MiniGame;
+        yield return new WaitForSeconds(0.5f);
+        GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
 
     private void Update()
@@ -110,7 +124,7 @@ public class ChessBoard : MonoBehaviour
             _mainCamera = Camera.main;
             return;
         }
-
+        if (!_setupDone) return;
         var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
         {
@@ -858,11 +872,7 @@ public class ChessBoard : MonoBehaviour
             return;
         }
         nw.AssignedTeam = ++_playerCount;
-        /*nw.MatchConfiguration = nw.MatchConfiguration == null
-            ? MatchConfiguration.GetGameUIConfiguration()
-            : MatchConfiguration.GetDifferenceFromConf(MatchConfiguration.GetGameUIConfiguration(), nw.MatchConfiguration);*/
         Server.Instance.SendToClient(cnn, nw);
-        //Server.Instance.Broadcast(nw);
         if (_playerCount == 1)
             Server.Instance.Broadcast(new NetStartGame());
     }
@@ -907,19 +917,7 @@ public class ChessBoard : MonoBehaviour
             return;
         }
         _currentTeam = nw.AssignedTeam;
-        /*if (_currentTeam == 0)
-        {
-            MatchConfiguration.SetChessboardFromPlayer1(nw.MatchConfiguration.FullBoard, nw.MatchConfiguration.DispositionAttacking, nw.MatchConfiguration.OneMoveTurn, nw.MatchConfiguration.MiniGame);
-        }
-        else
-        {
-            MatchConfiguration.SetChessboardFromPlayer2(nw.MatchConfiguration.DispositionDefending);
-        }*/
         Debug.Log($"My assigned team is {nw.AssignedTeam}");
-        /*if (_localGame && _currentTeam == 0)
-        {
-            Server.Instance.Broadcast(new NetStartGame());
-        }*/
     }
 
     private void OnMatchConfigurationClient(NetMessage msg)
@@ -932,8 +930,9 @@ public class ChessBoard : MonoBehaviour
         var conf = nmc.MatchConfiguration;
         if (conf.Attacking)
         {
-            MatchConfiguration.SetChessboardFromPlayer1(conf.FullBoard, conf.DispositionAttacking,
+            MatchConfiguration.SetChessboardFromPlayer1(this, conf.FullBoard, conf.DispositionAttacking,
                 conf.Turns, conf.MiniGame);
+            _configurationSetup[0] = true;
             var fullBoardT = conf.FullBoard ? "Yes" : "No";
             var attackingDT = conf.DispositionAttacking == DispositionType.None ? "None" : "NotEmpty";
             var turnsT = conf.Turns ? "2" : "1";
@@ -955,10 +954,13 @@ public class ChessBoard : MonoBehaviour
         }
         else
         {
-            MatchConfiguration.SetChessboardFromPlayer2(conf.DispositionDefending);
+            MatchConfiguration.SetChessboardFromPlayer2(this, conf.DispositionDefending);
+            _configurationSetup[1] = true;
             var defendingDT = conf.DispositionDefending == DispositionType.None ? "None" : "NotEmpty";
             DispositionDefendingText.text = $"Defending: {defendingDT}";
         }
+        if (_configurationSetup[0] && _configurationSetup[1])
+            StartCoroutine(Setup());
     }
     private void OnStartGameClient(NetMessage msg)
     {
@@ -973,7 +975,7 @@ public class ChessBoard : MonoBehaviour
         {
             MatchConfiguration = myConf
         });
-        GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
+        //GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
     private void OnMakeMoveClient(NetMessage msg)
     {
