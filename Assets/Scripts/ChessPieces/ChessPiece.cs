@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,12 +22,11 @@ namespace ChessPieces
         public int CurrentX;
         public int CurrentY;
         public ChessPieceType Type;
+        public float InitialSize;
 
         private Vector3 _desiredPosition;
-        private Vector3 _desiredScale = new (0.08f, 0.08f, 0.08f);
+        private Vector3 _desiredScale;
         private uint _hp = 50;
-
-        private GameObject _hpTextMesh;
 
         public virtual List<Vector2Int> GetSpecialAttack1Cells(Vector2Int cell, int tileCountX, int tileCountY)
         {
@@ -62,17 +62,6 @@ namespace ChessPieces
         {
             return _hp == 0;
         }
-
-        public bool IsHpLabelVisible()
-        {
-            return _hpTextMesh.activeSelf;
-        }
-
-        public void HpVisibility(bool value)
-        {
-            if (value) _hpTextMesh.GetComponentInChildren<TextMesh>().text = _hp.ToString();
-            _hpTextMesh.SetActive(value);
-        }
         
         private static string ChessPieceTypeToString(ChessPieceType cpt)
         {
@@ -97,9 +86,8 @@ namespace ChessPieces
 
         private void Start()
         {
-            _hpTextMesh = GetComponentInChildren<TextMesh>().gameObject;
-            _hpTextMesh.SetActive(false);
             transform.rotation = Quaternion.Euler(Team == 0 ? new Vector3(0, 90, 0) : new Vector3(0, 270, 0));
+            _desiredScale = new Vector3(InitialSize, InitialSize, InitialSize);
         }
 
         private void Update()

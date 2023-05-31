@@ -208,40 +208,11 @@ public class GameUI : MonoBehaviour
         EventSystem.SetActive(false);
         _confrontationHandled = false;
     }
-    public void ChangeCamera(CameraAngle index, ChessPiece[,] chessPieces)
+    public void ChangeCamera(CameraAngle index)
     {
         foreach (var cameraAngle in CameraAngles)
             cameraAngle.SetActive(false);
         CameraAngles[(int) index].SetActive(true);
-        switch (index)
-        {
-            case CameraAngle.BlackTeam:
-                foreach (var chessPiece in chessPieces)
-                {
-                    if (chessPiece != null)
-                    {
-                        var hpLabel = chessPiece.transform.GetChild(0);
-                        var localRotation = hpLabel.localRotation;
-                        hpLabel.localRotation =
-                            Quaternion.Euler(localRotation.eulerAngles.x, chessPiece.Team == 0 ? 90 : -90, localRotation.eulerAngles.z);
-                    }
-                }
-                break;
-            case CameraAngle.WhiteTeam:
-                foreach (var chessPiece in chessPieces)
-                {
-                    if (chessPiece != null)
-                    {
-                        var hpLabel = chessPiece.transform.GetChild(0);
-                        var localRotation = hpLabel.localRotation;
-                        hpLabel.localRotation =
-                            Quaternion.Euler(localRotation.eulerAngles.x, chessPiece.Team == 1 ? 90 : -90, localRotation.eulerAngles.z);
-                    }
-                }
-                break;
-            case CameraAngle.Menu:
-                break;
-        }
     }
     /*public void OnLocalGameButton()
     {
@@ -292,7 +263,7 @@ public class GameUI : MonoBehaviour
     }
     public void OnLeaveFromGameMenu()
     {
-        ChangeCamera(CameraAngle.Menu, null);
+        ChangeCamera(CameraAngle.Menu);
         MenuAnimator.SetTrigger(StartMenu);
     }
     #region MULTIPLAYER

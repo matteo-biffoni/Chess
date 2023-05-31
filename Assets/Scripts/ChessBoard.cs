@@ -55,10 +55,9 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private GameObject LeftRematch;
     [SerializeField] private GameObject RematchButton;
 
-    [Header("Prefabs & Materials")]
-    [SerializeField] private GameObject[] Prefabs;
-    [SerializeField] private Material[] BlackMaterials;
-    [SerializeField] private Material[] WhiteMaterials;
+    [Header("Prefabs")]
+    [SerializeField] private GameObject[] BugsPrefabs;
+    [SerializeField] private GameObject[] VegetablesPrefabs;
     
     [Header("Link with other scripts and logic")]
     [SerializeField] private MovesUI MovesUI;
@@ -70,6 +69,8 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private TMP_Text DispositionDefendingText;
     [SerializeField] private TMP_Text OneMoveTurnText;
     [SerializeField] private TMP_Text MiniGameText;
+
+    [SerializeField] private GameObject HpIndicators;
     
     // Logic
     private ChessPiece[,] _chessPieces;
@@ -98,7 +99,7 @@ public class ChessBoard : MonoBehaviour
     private readonly bool[] _configurationSetup = new bool[2];
     private bool _setupDone;
 
-    private uint _movesInTurn = 0;
+    private uint _movesInTurn;
 
     private void Start()
     {
@@ -118,7 +119,23 @@ public class ChessBoard : MonoBehaviour
         FightWithConfrontation = MatchConfiguration.MiniGame;
         TwoMoves = MatchConfiguration.Turns;
         yield return new WaitForSeconds(0.5f);
-        GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
+        if (_currentTeam == 1)
+        {
+            for (var i = 0; i < HpIndicators.transform.childCount; i++)
+            {
+                HpIndicators.transform.GetChild(i).localRotation = Quaternion.Euler(35f, 180f, 0f);
+            }
+            GameUI.Instance.ChangeCamera(CameraAngle.BlackTeam);
+        }
+        else
+        {
+            GameUI.Instance.ChangeCamera(CameraAngle.WhiteTeam);
+        }
+    }
+
+    private GameObject GetHpIndicator(int x, int y)
+    {
+        return HpIndicators.transform.GetChild(TileCountY * y + x).gameObject;
     }
 
     private void Update()
@@ -137,7 +154,12 @@ public class ChessBoard : MonoBehaviour
             {
                 _currentHover = hitPosition;
                 _tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
-                if (_chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[hitPosition.x, hitPosition.y].HpVisibility(true);
+                if (_chessPieces[_currentHover.x, _currentHover.y] != null)
+                {
+                    var hpIndicator = GetHpIndicator(_currentHover.x, _currentHover.y);
+                    hpIndicator.GetComponent<TextMesh>().text = _chessPieces[_currentHover.x, _currentHover.y].GetHp().ToString();
+                    hpIndicator.SetActive(true);
+                }
             }
 
             if (_currentHover != hitPosition)
@@ -145,10 +167,22 @@ public class ChessBoard : MonoBehaviour
                 _tiles[_currentHover.x, _currentHover.y].layer = ContainsValidMove(ref _availableMoves, _currentHover)
                     ? LayerMask.NameToLayer("Highlight")
                     : LayerMask.NameToLayer("Tile");
-                if (_currentHover != null && _currentHover != -Vector2Int.one && _chessPieces[_currentHover.x, _currentHover.y] != null && _chessPieces[_currentHover.x, _currentHover.y] != _currentlyDragging) _chessPieces[_currentHover.x, _currentHover.y].HpVisibility(false);
+                if (_currentHover != null && _currentHover != -Vector2Int.one && _chessPieces[_currentHover.x, _currentHover.y] != null && _chessPieces[_currentHover.x, _currentHover.y] != _currentlyDragging)
+                {
+                    
+                    var hpIndicator = GetHpIndicator(_currentHover.x, _currentHover.y);
+                    hpIndicator.GetComponent<TextMesh>().text = "HP";
+                    hpIndicator.SetActive(false);
+                }
                 _currentHover = hitPosition;
                 _tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
-                if (_chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[hitPosition.x, hitPosition.y].HpVisibility(true);
+                if (_chessPieces[_currentHover.x, _currentHover.y] != null)
+                {
+                    
+                    var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
+                    hpIndicator.GetComponent<TextMesh>().text = _chessPieces[hitPosition.x, hitPosition.y].GetHp().ToString();
+                    hpIndicator.SetActive(true);
+                }
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -158,6 +192,9 @@ public class ChessBoard : MonoBehaviour
                     if ((_chessPieces[hitPosition.x, hitPosition.y].Team == 0 && _isWhiteTurn && _currentTeam == 0) ||
                         (_chessPieces[hitPosition.x, hitPosition.y].Team == 1 && !_isWhiteTurn && _currentTeam == 1))
                     {
+                        var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
+                        hpIndicator.GetComponent<TextMesh>().text = "HP";
+                        hpIndicator.SetActive(false);
                         _currentlyDragging = _chessPieces[hitPosition.x, hitPosition.y];
                         _availableMoves =
                             _currentlyDragging.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
@@ -241,6 +278,9 @@ public class ChessBoard : MonoBehaviour
                 }
                 else
                 {
+                    var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
+                    hpIndicator.GetComponent<TextMesh>().text = "HP";
+                    hpIndicator.SetActive(false);
                     _currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y));
                     _currentlyDragging = null;
                     RemoveHighlightTiles();
@@ -254,12 +294,21 @@ public class ChessBoard : MonoBehaviour
                 _tiles[_currentHover.x, _currentHover.y].layer = ContainsValidMove(ref _availableMoves, _currentHover)
                     ? LayerMask.NameToLayer("Highlight")
                     : LayerMask.NameToLayer("Tile");
-                if (_currentlyDragging == null && _chessPieces[_currentHover.x, _currentHover.y] != null) _chessPieces[_currentHover.x, _currentHover.y].HpVisibility(false);
+                if (_currentlyDragging == null && _chessPieces[_currentHover.x, _currentHover.y] != null)
+                {
+                    
+                    var hpIndicator = GetHpIndicator(_currentHover.x, _currentHover.y);
+                    hpIndicator.GetComponent<TextMesh>().text = "HP";
+                    hpIndicator.SetActive(false);
+                }
                 _currentHover = -Vector2Int.one;
             }
 
             if (_currentlyDragging && Input.GetMouseButtonUp(0))
             {
+                var hpIndicator = GetHpIndicator(_currentlyDragging.CurrentX, _currentlyDragging.CurrentY);
+                hpIndicator.GetComponent<TextMesh>().text = "HP";
+                hpIndicator.SetActive(false);
                 _currentlyDragging.SetPosition(GetTileCenter(_currentlyDragging.CurrentX, _currentlyDragging.CurrentY));
                 _currentlyDragging = null;
                 RemoveHighlightTiles();
@@ -373,130 +422,129 @@ public class ChessBoard : MonoBehaviour
         _chessPieces = new ChessPiece[TileCountX, TileCountY];
         const int whiteTeam = 0;
         const int blackTeam = 1;
-        /*
-        // White team
-        _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
-        _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-        _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-        _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
-        _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-        _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-        _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-        _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
-        for (var i = 0; i < TileCountX; i++)
-            _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-        // Black team
-        _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
-        _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-        _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-        _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-        _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
-        _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-        _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-        _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
-        for (var i = 0; i < TileCountX; i++)
-            _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-            */
-        switch (MatchConfiguration.DispositionAttacking)
+        if (MatchConfiguration.FullBoard)
         {
-            case DispositionType.None:
-                _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
-                _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-                _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
-                _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-                _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-                _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
-                for (var i = 0; i < TileCountX; i++)
-                    _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                break;
-            case DispositionType.Heavy:
-                _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
-                _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-                _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
-                for (var i = 2; i < 6; i++)
-                    _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                break;
-            case DispositionType.Medium:
-                _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
-                _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-                _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-                _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                for (var i = 2; i < 6; i++)
-                    _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                break;
-            case DispositionType.Light:
-                _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-                _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-                _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-                _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
-                _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                for (var i = 1; i < 7; i++)
-                    _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-                break;
+            // White team
+            _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+            _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+            _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+            _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+            _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+            _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+            _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+            _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+            for (var i = 0; i < TileCountX; i++)
+                _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+            // Black team
+            _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+            _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+            _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+            _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
+            _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+            _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+            _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+            _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+            for (var i = 0; i < TileCountX; i++)
+                _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
         }
-        switch (MatchConfiguration.DispositionDefending)
+        else
         {
-            case DispositionType.None:
-                _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
-                _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-                _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-                _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
-                _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-                _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
-                for (var i = 0; i < TileCountX; i++)
-                    _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                break;
-            case DispositionType.Heavy:
-                _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
-                _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-                _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
-                _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                for (var i = 2; i < 6; i++)
-                    _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                break;
-            case DispositionType.Medium:
-                _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-                _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
-                _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
-                _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                for (var i = 2; i < 6; i++)
-                    _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                break;
-            case DispositionType.Light:
-                _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-                _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
-                _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
-                _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
-                _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                for (var i = 1; i < 7; i++)
-                    _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
-                break;
+            switch (MatchConfiguration.DispositionAttacking)
+            {
+                case DispositionType.None:
+                    _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+                    _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+                    _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+                    _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+                    _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+                    _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+                    for (var i = 0; i < TileCountX; i++)
+                        _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    break;
+                case DispositionType.Heavy:
+                    _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+                    _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+                    _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+                    for (var i = 2; i < 6; i++)
+                        _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    break;
+                case DispositionType.Medium:
+                    _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+                    _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+                    _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+                    _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    for (var i = 2; i < 6; i++)
+                        _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    break;
+                case DispositionType.Light:
+                    _chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    _chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+                    _chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+                    _chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+                    _chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+                    _chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    for (var i = 1; i < 7; i++)
+                        _chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+                    break;
+            }
+
+            switch (MatchConfiguration.DispositionDefending)
+            {
+                case DispositionType.None:
+                    _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+                    _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+                    _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
+                    _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+                    _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+                    _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+                    for (var i = 0; i < TileCountX; i++)
+                        _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    break;
+                case DispositionType.Heavy:
+                    _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+                    _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
+                    _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+                    _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    for (var i = 2; i < 6; i++)
+                        _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    break;
+                case DispositionType.Medium:
+                    _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+                    _chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
+                    _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+                    _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    for (var i = 2; i < 6; i++)
+                        _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    break;
+                case DispositionType.Light:
+                    _chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    _chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    _chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+                    _chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+                    _chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+                    _chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+                    _chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    for (var i = 1; i < 7; i++)
+                        _chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+                    break;
+            }
         }
     }
     private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
     {
-        var cp = Instantiate(Prefabs[(int) type - 1], transform).GetComponent<ChessPiece>();
+        var cp = Instantiate(team == 0 ? BugsPrefabs[(int) type - 1] : VegetablesPrefabs[(int) type - 1], transform).GetComponent<ChessPiece>();
         cp.Type = type;
         cp.Team = team;
-        cp.GetComponent<MeshRenderer>().material = team switch
-        {
-            1 => BlackMaterials[(int)type - 1],
-            0 => WhiteMaterials[(int)type - 1],
-            _ => cp.GetComponent<MeshRenderer>().material
-        };
         return cp;
     }
     // Positioning
@@ -872,6 +920,9 @@ public class ChessBoard : MonoBehaviour
             // Here the battle begins
             if (ocp.Team == 0)
             {
+                var hpIndicator = GetHpIndicator(ocp.CurrentX, ocp.CurrentY);
+                hpIndicator.GetComponent<TextMesh>().text = "HP";
+                hpIndicator.SetActive(false);
                 if (ocp.Type == ChessPieceType.King)
                     CheckMate(1);
                 _deadWhites.Add(ocp);
@@ -882,6 +933,10 @@ public class ChessBoard : MonoBehaviour
             }
             else
             {
+                
+                var hpIndicator = GetHpIndicator(ocp.CurrentX, ocp.CurrentY);
+                hpIndicator.GetComponent<TextMesh>().text = "HP";
+                hpIndicator.SetActive(false);
                 if (ocp.Type == ChessPieceType.King)
                     CheckMate(0);
                 _deadBlacks.Add(ocp);

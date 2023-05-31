@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ChessPieces;
 using Net;
 using Net.NetMessages;
@@ -8,6 +8,8 @@ using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
 
+[SuppressMessage("ReSharper", "CommentTypo")]
+[SuppressMessage("ReSharper", "IdentifierTypo")]
 public class ChessBoardConfrontation : MonoBehaviour
 {
     private ChessPiece _attacking;
@@ -27,9 +29,8 @@ public class ChessBoardConfrontation : MonoBehaviour
     [SerializeField] private float SpecialAttack2Interval = 3f;
     [SerializeField] private float SpecialAttack3Interval = 10f;
     
-    [SerializeField] private GameObject[] Prefabs;
-    [SerializeField] private Material[] BlackMaterials;
-    [SerializeField] private Material[] WhiteMaterials;
+    [SerializeField] private GameObject[] BugsPrefabs;
+    [SerializeField] private GameObject[] VegetablesPrefabs;
     [SerializeField] private float MiniGameDuration = 10f;
 
     [SerializeField] private TMP_Text TimerText;
@@ -463,28 +464,18 @@ public class ChessBoardConfrontation : MonoBehaviour
         _board = new ChessPiece[TileCountX, TileCountY];
         _firedCells = new int[TileCountX, TileCountY];
         GenerateAllTiles(TileSize, TileCountX, TileCountY);
-        _defending = Instantiate(Prefabs[(int)_defendingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
+        
+        _defending = Instantiate(_defendingConfrontation.Team == 0 ? BugsPrefabs[(int) _defendingConfrontation.Type - 1] : VegetablesPrefabs[(int) _defendingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
         _defending.Type = _defendingConfrontation.Type;
         _defending.Team = _defendingConfrontation.Team;
         _defending.SetHp(_defendingConfrontation.GetHp());
-        _defending.GetComponent<MeshRenderer>().material = _defendingConfrontation.Team switch
-        {
-            1 => BlackMaterials[(int)_defendingConfrontation.Type - 1],
-            0 => WhiteMaterials[(int)_defendingConfrontation.Type - 1],
-            _ => _defendingConfrontation.GetComponent<MeshRenderer>().material
-        };
         _defending.CurrentX = 4;
         _defending.CurrentY = 4;
         _defending.SetConfrontationAim(GetTileCenter(4, 4));
-        _attacking = Instantiate(Prefabs[(int)attackingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
+        
+        _attacking = Instantiate(attackingConfrontation.Team == 0 ? BugsPrefabs[(int) attackingConfrontation.Type - 1] : VegetablesPrefabs[(int) attackingConfrontation.Type - 1], transform).GetComponent<ChessPiece>();
         _attacking.Type = attackingConfrontation.Type;
         _attacking.Team = attackingConfrontation.Team;
-        _attacking.GetComponent<MeshRenderer>().material = attackingConfrontation.Team switch
-        {
-            1 => BlackMaterials[(int)attackingConfrontation.Type - 1],
-            0 => WhiteMaterials[(int)attackingConfrontation.Type - 1],
-            _ => attackingConfrontation.GetComponent<MeshRenderer>().material
-        };
         _attacking.CurrentX = 9;
         _attacking.CurrentY = 4;
         _attacking.SetConfrontationAim(GetTileCenter(9, 4));
