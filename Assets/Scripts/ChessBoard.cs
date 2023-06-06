@@ -5,7 +5,6 @@ using System.Linq;
 using ChessPieces;
 using Net;
 using Net.NetMessages;
-using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,11 +63,11 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private bool FightWithConfrontation = true;
     [SerializeField] private bool TwoMoves = true;
 
-    [SerializeField] private TMP_Text FullBoardText;
+    /*[SerializeField] private TMP_Text FullBoardText;
     [SerializeField] private TMP_Text DispositionAttackingText;
     [SerializeField] private TMP_Text DispositionDefendingText;
     [SerializeField] private TMP_Text OneMoveTurnText;
-    [SerializeField] private TMP_Text MiniGameText;
+    [SerializeField] private TMP_Text MiniGameText;*/
 
     [SerializeField] private GameObject HpIndicators;
     
@@ -1091,31 +1090,11 @@ public class ChessBoard : MonoBehaviour
             MatchConfiguration.SetChessboardFromPlayer1(this, conf.FullBoard, conf.DispositionAttacking,
                 conf.Turns, conf.MiniGame);
             _configurationSetup[0] = true;
-            var fullBoardT = conf.FullBoard ? "Yes" : "No";
-            var attackingDT = conf.DispositionAttacking;
-            var turnsT = conf.Turns ? "2" : "1";
-            var miniGameT = conf.MiniGame ? "Yes" : "No";
-            FullBoardText.text = $"Fullboard: {fullBoardT}";
-            if (!conf.FullBoard)
-            {
-                DispositionAttackingText.gameObject.SetActive(true);
-                DispositionDefendingText.gameObject.SetActive(true);
-                DispositionAttackingText.text = $"Attacking: {attackingDT}";
-            }
-            else
-            {
-                DispositionAttackingText.gameObject.SetActive(false);
-                DispositionDefendingText.gameObject.SetActive(false);
-            }
-            OneMoveTurnText.text = $"Moves per turn: {turnsT}";
-            MiniGameText.text = $"Minigame: {miniGameT}";
         }
         else
         {
             MatchConfiguration.SetChessboardFromPlayer2(this, conf.DispositionDefending);
             _configurationSetup[1] = true;
-            var defendingDT = conf.DispositionDefending;
-            DispositionDefendingText.text = $"Defending: {defendingDT}";
         }
         if (_configurationSetup[0] && _configurationSetup[1])
             StartCoroutine(Setup());

@@ -18,6 +18,8 @@ public class ChessBoardConfrontation : MonoBehaviour
 
     public static ChessBoardConfrontation Instance { get; set; }
 
+    [SerializeField] private GameObject BackgroundGo;
+
     [SerializeField] private Material TileMaterial;
     [SerializeField] private float TileSize = 1f;
     [SerializeField] private float YOffset = 0.2f;
@@ -39,6 +41,9 @@ public class ChessBoardConfrontation : MonoBehaviour
     [SerializeField] private KeyCode SpecialAttack1Key = KeyCode.Alpha1;
     [SerializeField] private KeyCode SpecialAttack2Key = KeyCode.Alpha2;
     [SerializeField] private KeyCode SpecialAttack3Key = KeyCode.Alpha3;
+
+    [SerializeField] private GameObject MovableTexturePrefab;
+    [SerializeField] private GameObject FiredTexturePrefab;
 
     private bool _timeElapsed;
     
@@ -211,7 +216,8 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         // Mettere preavviso
         _firedCells[cell.x, cell.y]++;
-        _tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("FiredCell");
+        _tiles[cell.x, cell.y].transform.GetComponent<TileInConfrontationHandler>().SetFired(true);
+        //_tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("FiredCell");
         StartCoroutine(UnFireCellAfterXSec(cell, FireDuration));
     }
 
@@ -242,7 +248,9 @@ public class ChessBoardConfrontation : MonoBehaviour
         yield return new WaitForSeconds(sec);
         _firedCells[cell.x, cell.y]--;
         if (_firedCells[cell.x, cell.y] == 0)
-            _tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("Tile");
+            _tiles[cell.x, cell.y].transform.GetComponent<TileInConfrontationHandler>().SetFired(false);
+        /*if (_firedCells[cell.x, cell.y] == 0)
+            _tiles[cell.x, cell.y].layer = LayerMask.NameToLayer("Tile");*/
         if (!ConfrontationListener.IsAttacking) SetAvailablePath();
     }
 
@@ -355,7 +363,8 @@ public class ChessBoardConfrontation : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("HighlightHard", "FiredCell")))
+                    if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("Tile")))
+                    /*if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("HighlightHard", "FiredCell")))*/
                     {
                         var hitPosition = LookupTileIndex(info.transform.gameObject);
                         if (_availableMoves.Contains(hitPosition))
@@ -445,20 +454,27 @@ public class ChessBoardConfrontation : MonoBehaviour
     private void HighlightTiles()
     {
         foreach (var availableMove in _availableMoves)
+            _tiles[availableMove.x, availableMove.y].transform.GetComponent<TileInConfrontationHandler>()
+                .SetMovable(true);
             // Aggiungere un layer per far capire che ci puoi andare ma che è a fuoco
-            if (_tiles[availableMove.x, availableMove.y].layer == LayerMask.NameToLayer("Tile"))
-                _tiles[availableMove.x, availableMove.y].layer = LayerMask.NameToLayer("HighlightHard");
+            /*if (_tiles[availableMove.x, availableMove.y].layer == LayerMask.NameToLayer("Tile"))
+                _tiles[availableMove.x, availableMove.y].layer = LayerMask.NameToLayer("HighlightHard");*/
     }
 
     private void RemoveHighlightTiles()
     {
         foreach (var availableMove in _availableMoves)
-            _tiles[availableMove.x, availableMove.y].layer = LayerMask.NameToLayer("Tile");
+            _tiles[availableMove.x, availableMove.y].transform.GetComponent<TileInConfrontationHandler>()
+                .SetMovable(false);
+            //_tiles[availableMove.x, availableMove.y].layer = LayerMask.NameToLayer("Tile");
         _availableMoves.Clear();
     }
 
     private void SetupChessBoard()
     {
+        var i = Confrontation.GetCurrentDefending().CurrentX;
+        var j = Confrontation.GetCurrentDefending().CurrentY;
+        BackgroundGo.transform.position = new Vector3(7 - 2 * i, 0f, -3 - 2 * j);
         _defendingConfrontation = Confrontation.GetCurrentDefending();
         var attackingConfrontation = Confrontation.GetCurrentAttacking();
         _board = new ChessPiece[TileCountX, TileCountY];
@@ -528,6 +544,8 @@ public class ChessBoardConfrontation : MonoBehaviour
         var mesh = new Mesh();
         tileObject.AddComponent<MeshFilter>().mesh = mesh;
         tileObject.AddComponent<MeshRenderer>().material  = TileMaterial;
+        tileObject.AddComponent<TileInConfrontationHandler>();
+        
         var vertices = new Vector3[4];
         vertices[0] = new Vector3(x * tileSize, YOffset, y * tileSize) - _bounds;
         vertices[1] = new Vector3(x * tileSize, YOffset, (y + 1) * tileSize) - _bounds;
@@ -538,7 +556,14 @@ public class ChessBoardConfrontation : MonoBehaviour
         mesh.triangles = tris;
         mesh.RecalculateNormals();
         tileObject.layer = LayerMask.NameToLayer("Tile");
-        tileObject.AddComponent<BoxCollider>();
+        var bCollider = tileObject.AddComponent<BoxCollider>();
+        var movableTextureObj = Instantiate(MovableTexturePrefab, tileObject.transform);
+        Debug.Log($"Tile object: {tileObject.transform.localPosition}");
+        Debug.Log($"Movable before: {movableTextureObj.transform.position}");
+        movableTextureObj.transform.position = bCollider.center;
+        Debug.Log($"Movable after: {movableTextureObj.transform.position}");
+        var firedTextureObj = Instantiate(FiredTexturePrefab, tileObject.transform);
+        firedTextureObj.transform.position = bCollider.center;
         return tileObject;
     }
 }
