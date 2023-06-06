@@ -527,7 +527,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 206.84158, y: -75}
+  m_AnchoredPosition: {x: 206.84155, y: -75}
   m_SizeDelta: {x: 313.68317, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &52348636
@@ -797,7 +797,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -127.71}
+  m_AnchoredPosition: {x: 960, y: -127.70999}
   m_SizeDelta: {x: 1720, y: 55.42}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &86187527
@@ -1570,7 +1570,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -180.42}
+  m_AnchoredPosition: {x: 960, y: -180.41998}
   m_SizeDelta: {x: 1720, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &154088315
@@ -3309,6 +3309,7 @@ MonoBehaviour:
   - {fileID: 929661063}
   - {fileID: 1796410680}
   - {fileID: 540608359}
+  MovesPanel: {fileID: 1721617707}
 --- !u!95 &518604171
 Animator:
   serializedVersion: 5

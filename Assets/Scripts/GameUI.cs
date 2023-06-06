@@ -46,6 +46,8 @@ public class GameUI : MonoBehaviour
     private DispositionType _selectedDefendingDisposition = DispositionType.None;
     [SerializeField] private Button[] DispositionButtonsAttacking;
     [SerializeField] private Button[] DispositionButtonsDefending;
+
+    [SerializeField] private GameObject MovesPanel;
     //private bool _localGame;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
@@ -123,6 +125,7 @@ public class GameUI : MonoBehaviour
 
     public void ZoomIn(ChessPiece defender, bool isAttacking)
     {
+        MovesPanel.SetActive(false);
         ChessBoard.enabled = false;
         if (CameraAngles is not { Length: 3 })
         {
@@ -188,6 +191,7 @@ public class GameUI : MonoBehaviour
         else */if (prevCamera != null) 
             prevCamera.SetActive(true);
         Confrontation.ResetConfrontation();
+        MovesPanel.SetActive(true);
     }
 
     private IEnumerator ZoomInAnimationAndChangeScene(CinemachineVirtualCamera zoomInCamera, int speed, bool isAttacking)
