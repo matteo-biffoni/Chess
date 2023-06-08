@@ -105,6 +105,11 @@ public class GameUI : MonoBehaviour
         _selectedDefendingDisposition = dispositionType;
     }
 
+    public void QuitEverything()
+    {
+        Application.Quit();
+    }
+
     private void Update()
     {
         if (!_confrontationHandled && _cameraBeforeConfrontation != null && Confrontation.GetCurrentOutcome() != Outcome.NotAvailable && !Confrontation.ConfrontationSceneLoaded)
