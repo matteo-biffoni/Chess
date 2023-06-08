@@ -62,6 +62,7 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private MovesUI MovesUI;
     [SerializeField] private bool FightWithConfrontation = true;
     [SerializeField] private bool TwoMoves = true;
+    [SerializeField] private CameraHandler CameraHandler;
 
     /*[SerializeField] private TMP_Text FullBoardText;
     [SerializeField] private TMP_Text DispositionAttackingText;
@@ -124,11 +125,14 @@ public class ChessBoard : MonoBehaviour
             {
                 HpIndicators.transform.GetChild(i).localRotation = Quaternion.Euler(35f, 180f, 0f);
             }
-            GameUI.Instance.ChangeCamera(CameraAngle.BlackTeam);
+            //GameUI.Instance.ChangeCamera(CameraAngle.BlackTeam);
+            CameraHandler.SetPosition(false);
+
         }
         else
         {
-            GameUI.Instance.ChangeCamera(CameraAngle.WhiteTeam);
+            CameraHandler.SetPosition(true);
+            //GameUI.Instance.ChangeCamera(CameraAngle.WhiteTeam);
         }
     }
 
@@ -141,7 +145,7 @@ public class ChessBoard : MonoBehaviour
     {
         if (!_mainCamera)
         {
-            _mainCamera = Camera.main;
+            _mainCamera = CameraHandler.GetComponent<Camera>();
             return;
         }
         if (!_setupDone) return;
@@ -1192,6 +1196,7 @@ public class ChessBoard : MonoBehaviour
             yield return null;
         }
         StartCoroutine(attacking.SetPositionAfterSeconds(GetTileCenter(attacking.CurrentX, attacking.CurrentY), 2));
+        yield return new WaitForSeconds(2f);
         if (defending.Team == _currentTeam)
         {
             _confrontationHandled = false;

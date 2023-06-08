@@ -113,14 +113,4 @@ public enum DispositionType
     Light = 3
 }
 
-public class ChessBoardDisposition
-{
-
-    public static ChessBoardDisposition GetDispositionFromType(DispositionType type)
-    {
-        return null;
-    }
-    
-}
-
 

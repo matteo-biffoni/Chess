@@ -10,13 +10,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public enum CameraAngle
-{
-    Menu = 0,
-    WhiteTeam = 1,
-    BlackTeam = 2
-}
-
 public class GameUI : MonoBehaviour
 {
     public static GameUI Instance { get; private set; }
@@ -31,10 +24,8 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject MainCamera;
     [SerializeField] private GameObject EventSystem;
     [SerializeField] private ChessBoard ChessBoard;
-    [SerializeField] private Transform Cameras;
     [SerializeField] private Animator MenuAnimator;
     [SerializeField] private TMP_InputField AddressInput;
-    [SerializeField] private GameObject[] CameraAngles;
     public Action<bool> SetLocalGame;
     private static readonly int InGameMenu = Animator.StringToHash("InGameMenu");
     private static readonly int HostMenu = Animator.StringToHash("HostMenu");
@@ -50,7 +41,7 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject MovesPanel;
     //private bool _localGame;
     
-    private CinemachineVirtualCamera _cameraBeforeConfrontation;
+    //private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
     private void Awake()
     {
@@ -107,10 +98,11 @@ public class GameUI : MonoBehaviour
 
     private void Update()
     {
-        if (!_confrontationHandled && _cameraBeforeConfrontation != null && Confrontation.GetCurrentOutcome() != Outcome.NotAvailable && !Confrontation.ConfrontationSceneLoaded)
+        /*if (!_confrontationHandled && _cameraBeforeConfrontation != null && Confrontation.GetCurrentOutcome() != Outcome.NotAvailable && !Confrontation.ConfrontationSceneLoaded)
+        {*/
+        if (!_confrontationHandled && Confrontation.GetCurrentOutcome() != Outcome.NotAvailable && !Confrontation.ConfrontationSceneLoaded)
         {
             _confrontationHandled = true;
-            _cameraBeforeConfrontation.gameObject.SetActive(true);
             MainCamera.SetActive(true);
             EventSystem.SetActive(true);
             ZoomOut();
@@ -127,18 +119,18 @@ public class GameUI : MonoBehaviour
     {
         MovesPanel.SetActive(false);
         ChessBoard.enabled = false;
-        if (CameraAngles is not { Length: 3 })
+        /*if (CameraAngles is not { Length: 3 })
         {
             Debug.LogError("Couldn't find a suitable camera to zoom in");
             return;
-        }
-        var newCamera = new GameObject("ZoomInCamera")
+        }*/
+        /*var newCamera = new GameObject("ZoomInCamera")
         {
             transform =
             {
                 parent = Cameras
             }
-        };
+        };*/
         /*if (_localGame)
         {
             newCamera.transform.position = defender.Team switch
@@ -149,7 +141,7 @@ public class GameUI : MonoBehaviour
             };
         }
         else*/
-        {
+        /*{
             foreach (var cameraAngle in CameraAngles)
             {
                 if (cameraAngle.activeSelf)
@@ -158,19 +150,30 @@ public class GameUI : MonoBehaviour
                     break;
                 }
             }
-        }
-        newCamera.transform.LookAt(defender.transform);
+        }*/
+        /*newCamera.transform.LookAt(defender.transform);
         var virtualCamera = newCamera.AddComponent<CinemachineVirtualCamera>();
         foreach (var cameraAngle in CameraAngles)
         {
             cameraAngle.SetActive(false);
-        }
-        StartCoroutine(ZoomInAnimationAndChangeScene(virtualCamera, 10, isAttacking));
+        }*/
+        //StartCoroutine(ZoomInAnimationAndChangeScene(virtualCamera, 10, isAttacking));
+        MainCamera.transform.LookAt(defender.transform);
+        StartCoroutine(ZoomInAnimationAndChangeScene(10, isAttacking));
     }
 
     private IEnumerator ZoomOutAndClean(int speed)
     {
-        while (Math.Abs(_cameraBeforeConfrontation.m_Lens.FieldOfView - 60f) > 1f)
+        var cam = MainCamera.GetComponent<Camera>();
+        while (Mathf.Abs(cam.fieldOfView - 60f) > 1f)
+        {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 60f, speed * Time.deltaTime);
+            yield return null;
+        }
+        Confrontation.ResetConfrontation();
+        MovesPanel.SetActive(true);
+        MainCamera.transform.LookAt(ChessBoard.transform);
+        /*while (Math.Abs(_cameraBeforeConfrontation.m_Lens.FieldOfView - 60f) > 1f)
         {
             _cameraBeforeConfrontation.m_Lens.FieldOfView = Mathf.Lerp(_cameraBeforeConfrontation.m_Lens.FieldOfView, 60f, speed * Time.deltaTime);
             yield return null;
@@ -188,15 +191,30 @@ public class GameUI : MonoBehaviour
                     CameraAngles[2].SetActive(true);
                     break;
             }
-        else */if (prevCamera != null) 
+        else */ /*if (prevCamera != null) 
             prevCamera.SetActive(true);
         Confrontation.ResetConfrontation();
-        MovesPanel.SetActive(true);
+        MovesPanel.SetActive(true);*/
     }
 
-    private IEnumerator ZoomInAnimationAndChangeScene(CinemachineVirtualCamera zoomInCamera, int speed, bool isAttacking)
+    private IEnumerator ZoomInAnimationAndChangeScene(int speed, bool isAttacking)
     {
-        _cameraBeforeConfrontation = zoomInCamera;
+        ConfrontationListener.IsAttacking = isAttacking;
+        var asyncScene = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+        asyncScene.allowSceneActivation = false;
+        var cam = MainCamera.GetComponent<Camera>();
+        while (Mathf.Abs(cam.fieldOfView - .01f) > 0.001f)
+        {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 0.01f, speed * Time.deltaTime);
+            yield return null;
+        }
+
+        asyncScene.allowSceneActivation = true;
+        Confrontation.ConfrontationSceneLoaded = true;
+        MainCamera.SetActive(false);
+        EventSystem.SetActive(false);
+        _confrontationHandled = false;
+        /*_cameraBeforeConfrontation = zoomInCamera;
         ConfrontationListener.IsAttacking = isAttacking;
         var asyncScene = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
         asyncScene.allowSceneActivation = false;
@@ -210,13 +228,7 @@ public class GameUI : MonoBehaviour
         _cameraBeforeConfrontation.gameObject.SetActive(false);
         MainCamera.SetActive(false);
         EventSystem.SetActive(false);
-        _confrontationHandled = false;
-    }
-    public void ChangeCamera(CameraAngle index)
-    {
-        foreach (var cameraAngle in CameraAngles)
-            cameraAngle.SetActive(false);
-        CameraAngles[(int) index].SetActive(true);
+        _confrontationHandled = false;*/
     }
     /*public void OnLocalGameButton()
     {
@@ -267,7 +279,7 @@ public class GameUI : MonoBehaviour
     }
     public void OnLeaveFromGameMenu()
     {
-        ChangeCamera(CameraAngle.Menu);
+        //ChangeCamera(CameraAngle.Menu);
         MenuAnimator.SetTrigger(StartMenu);
     }
     #region MULTIPLAYER
