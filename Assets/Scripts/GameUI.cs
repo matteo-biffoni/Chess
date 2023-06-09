@@ -35,6 +35,8 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Animator MenuAnimator;
     [SerializeField] private TMP_InputField AddressInput;
     [SerializeField] private GameObject[] CameraAngles;
+    [SerializeField] private GameObject PlaylistsMenu;
+    [SerializeField] private GameObject CustomMatchMenu;
     public Action<bool> SetLocalGame;
     private static readonly int InGameMenu = Animator.StringToHash("InGameMenu");
     private static readonly int HostMenu = Animator.StringToHash("HostMenu");
@@ -42,6 +44,7 @@ public class GameUI : MonoBehaviour
     private static readonly int WaitingMenu = Animator.StringToHash("WaitingMenu");
     private static readonly int FindAMatchMenu = Animator.StringToHash("FindMenu");
     private bool _confrontationHandled = true;
+    private bool _playlistsMenu = true;
     private DispositionType _selectedAttackingDisposition = DispositionType.None;
     private DispositionType _selectedDefendingDisposition = DispositionType.None;
     [SerializeField] private Button[] DispositionButtonsAttacking;
@@ -275,6 +278,24 @@ public class GameUI : MonoBehaviour
         ChangeCamera(CameraAngle.Menu);
         MenuAnimator.SetTrigger(StartMenu);
     }
+
+    public void OnPlaylistsButton(){
+        if(!_playlistsMenu){
+            PlaylistsMenu.SetActive(true);
+            CustomMatchMenu.SetActive(false);
+            _playlistsMenu = true;
+        }
+    }
+
+    public void OnCustomMatchButton(){
+        if(_playlistsMenu){
+            CustomMatchMenu.SetActive(true);
+            PlaylistsMenu.SetActive(false);
+            _playlistsMenu = false;
+        }
+    }
+
+
     #region MULTIPLAYER
     private void RegisterEvents()
     {
