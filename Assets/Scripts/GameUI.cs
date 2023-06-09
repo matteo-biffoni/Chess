@@ -233,7 +233,7 @@ public class GameUI : MonoBehaviour
         //_localGame = true;
         Server.Init(8007);
         Client.Init("127.0.0.1", 8007);
-    }*/
+    }AAAAAAAAAAAAAAA*/
     public void OnHostMenuButton()
     {
         MenuAnimator.SetTrigger(HostMenu);
