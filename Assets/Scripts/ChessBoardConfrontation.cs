@@ -7,6 +7,7 @@ using Net.NetMessages;
 using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
+using UnityEngine.UI;
 
 [SuppressMessage("ReSharper", "CommentTypo")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
@@ -19,6 +20,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     public static ChessBoardConfrontation Instance { get; set; }
 
     [SerializeField] private GameObject BackgroundGo;
+    [SerializeField] private AttackPanelManager AttackPanelManager;
 
     [SerializeField] private Material TileMaterial;
     [SerializeField] private float TileSize = 1f;
@@ -36,7 +38,8 @@ public class ChessBoardConfrontation : MonoBehaviour
     [SerializeField] private float MiniGameDuration = 10f;
 
     [SerializeField] private TMP_Text TimerText;
-    [SerializeField] private TMP_Text DefendingHpText;
+    private bool _timerTextAnimation;
+    [SerializeField] private Slider HpSlider;
     [SerializeField] private int FireDuration = 5;
     [SerializeField] private KeyCode SpecialAttack1Key = KeyCode.Alpha1;
     [SerializeField] private KeyCode SpecialAttack2Key = KeyCode.Alpha2;
@@ -134,7 +137,9 @@ public class ChessBoardConfrontation : MonoBehaviour
         {
             _defending.DamagePiece();
         }
-        DefendingHpText.text = "Piece hp: " + _defending.GetHp();
+        HpSlider.value = _defending.GetHp();
+        //Debug.Log($"Hp slider value: {HpSlider.value}");
+        //Debug.Log($"Defender hp: {_defending.GetHp()}");
     }
 
     private void OnNormalAttackInConfrontationClient(NetMessage msg)
@@ -287,7 +292,6 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (ConfrontationListener.IsAttacking)
         {
-
             if (Input.GetKey(SpecialAttack1Key))
                 _selectedSpecialAttack = 1;
             else if (Input.GetKey(SpecialAttack2Key) && _attacking.Type != ChessPieceType.Pawn)
@@ -296,6 +300,10 @@ public class ChessBoardConfrontation : MonoBehaviour
                 _selectedSpecialAttack = 3;
             else
                 _selectedSpecialAttack = 0;
+            if (_selectedSpecialAttack != AttackPanelManager.GetSelectedAttack())
+            {
+                AttackPanelManager.SelectAttack(_selectedSpecialAttack);
+            }
             if (Input.GetMouseButtonDown(0))
             {
                 var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -307,6 +315,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                         case 0 when _canFireNormalAttack:
                             _canFireNormalAttack = false;
                             StartCoroutine(ResetNormalAttackAfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(0, NormalAttackInterval));
                             FireCell(hitPosition);
                             var nnaic = new NetNormalAttackInConfrontation
                             {
@@ -318,6 +327,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                         case 1 when _canFireSpecialAttack1:
                             _canFireSpecialAttack1 = false;
                             StartCoroutine(ResetSpecialAttack1AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(1, SpecialAttack1Interval));
                             SpecialAttack1(hitPosition);
                             var nsaic1 = new NetSpecialAttackInConfrontation
                             {
@@ -330,6 +340,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                         case 2 when _canFireSpecialAttack2:
                             _canFireSpecialAttack2 = false;
                             StartCoroutine(ResetSpecialAttack2AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(2, SpecialAttack2Interval));
                             SpecialAttack2(hitPosition);
                             var nsaic2 = new NetSpecialAttackInConfrontation
                             {
@@ -342,6 +353,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                         case 3 when _canFireSpecialAttack3:
                             _canFireSpecialAttack3 = false;
                             StartCoroutine(ResetSpecialAttack3AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(3, SpecialAttack3Interval));
                             SpecialAttack3(hitPosition);
                             var nsaic3 = new NetSpecialAttackInConfrontation
                             {
@@ -501,8 +513,22 @@ public class ChessBoardConfrontation : MonoBehaviour
         {
             SetAvailablePath();
             StartCoroutine(CheckForDamageWrapper());
+            Destroy(AttackPanelManager.gameObject);
         }
-        DefendingHpText.text = "Piece hp: " + _defending.GetHp();
+        else
+        {
+            var numberOfAttacksToRemove = _attacking.Type switch
+            {
+                ChessPieceType.Pawn => 3,
+                ChessPieceType.Knight => 2,
+                ChessPieceType.Queen => 0,
+                _ => 1
+            };
+            AttackPanelManager.EnableAppropriateAttacks(numberOfAttacksToRemove);
+        }
+        HpSlider.value = _defending.GetHp();
+        //Debug.Log($"Initial hp slider value: {HpSlider.value}");
+        //Debug.Log($"Initial defender hp: {_defending.GetHp()}");
         StartCoroutine(MiniGameTimer());
     }
 
@@ -512,10 +538,35 @@ public class ChessBoardConfrontation : MonoBehaviour
         while (timeElapsed > 0)
         {
             timeElapsed -= Time.deltaTime;
-            TimerText.text = "Timer: " + (int) timeElapsed;
+            TimerText.text = ((int) timeElapsed).ToString();
+            if (!_timerTextAnimation && timeElapsed < 6)
+            {
+                _timerTextAnimation = true;
+                StartCoroutine(TimerTextAnimation(13f));
+            }
             yield return null;
         }
         _timeElapsed = true;
+    }
+
+    private IEnumerator TimerTextAnimation(float speed)
+    {
+        while (true)
+        {
+            while (Vector3.Distance(TimerText.transform.localScale, new Vector3(1.3f, 1.3f, 1.3f)) > 0.01f)
+            {
+                TimerText.transform.localScale = Vector3.Lerp(TimerText.transform.localScale,
+                    new Vector3(1.3f, 1.3f, 1.3f), Time.deltaTime * speed);
+                yield return null;
+            }
+
+            while (Vector3.Distance(TimerText.transform.localScale, new Vector3(0.7f, 0.7f, 0.7f)) > 0.01f)
+            {
+                TimerText.transform.localScale = Vector3.Lerp(TimerText.transform.localScale,
+                    new Vector3(0.7f, 0.7f, 0.7f), Time.deltaTime * speed);
+                yield return null;
+            }
+        }
     }
     
     private Vector3 GetTileCenter(int x, int y)
@@ -558,10 +609,10 @@ public class ChessBoardConfrontation : MonoBehaviour
         tileObject.layer = LayerMask.NameToLayer("Tile");
         var bCollider = tileObject.AddComponent<BoxCollider>();
         var movableTextureObj = Instantiate(MovableTexturePrefab, tileObject.transform);
-        Debug.Log($"Tile object: {tileObject.transform.localPosition}");
-        Debug.Log($"Movable before: {movableTextureObj.transform.position}");
+        //Debug.Log($"Tile object: {tileObject.transform.localPosition}");
+        //Debug.Log($"Movable before: {movableTextureObj.transform.position}");
         movableTextureObj.transform.position = bCollider.center;
-        Debug.Log($"Movable after: {movableTextureObj.transform.position}");
+        //Debug.Log($"Movable after: {movableTextureObj.transform.position}");
         var firedTextureObj = Instantiate(FiredTexturePrefab, tileObject.transform);
         firedTextureObj.transform.position = bCollider.center;
         return tileObject;

@@ -124,7 +124,7 @@ namespace Net
             {
                 if (connection.IsCreated)
                 {
-                    Debug.Log($"Sending {msg.Code} to: {connection.InternalId}");
+                    //Debug.Log($"Sending {msg.Code} to: {connection.InternalId}");
                     SendToClient(connection, msg);
                 }
             }

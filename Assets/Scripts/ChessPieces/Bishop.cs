@@ -76,6 +76,7 @@ namespace ChessPieces
                 r.Add(new Vector2Int(x, y));
             for (int x = cell.x - 1, y = cell.y - 1; x >= 0 && y >= 0; x--, y--)
                 r.Add(new Vector2Int(x, y));
+            r.Add(new Vector2Int(cell.x, cell.y));
             return r;
         }
 
