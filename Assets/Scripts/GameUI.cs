@@ -24,10 +24,10 @@ public class GameUI : MonoBehaviour
     public Server Server;
     public Client Client;
 
-    [SerializeField] private Toggle FullBoardToggle;
-    [SerializeField] private GameObject PartialBoardPanel;
-    [SerializeField] private Toggle MiniGameToggle;
-    [SerializeField] private Toggle NumberOfTurnsToggle;
+    //[SerializeField] private Toggle FullBoardToggle;
+    //[SerializeField] private GameObject PartialBoardPanel;
+    //[SerializeField] private Toggle MiniGameToggle;
+    //[SerializeField] private Toggle NumberOfTurnsToggle;
     [SerializeField] private GameObject MainCamera;
     [SerializeField] private GameObject EventSystem;
     [SerializeField] private ChessBoard ChessBoard;
@@ -37,6 +37,8 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject[] CameraAngles;
     [SerializeField] private GameObject PlaylistsMenu;
     [SerializeField] private GameObject CustomMatchMenu;
+    [SerializeField] private Button ConnectButton;
+    [SerializeField] private Image Image1, Image2;
     public Action<bool> SetLocalGame;
     private static readonly int InGameMenu = Animator.StringToHash("InGameMenu");
     private static readonly int HostMenu = Animator.StringToHash("HostMenu");
@@ -55,11 +57,30 @@ public class GameUI : MonoBehaviour
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
+    private bool _fullboard;
+    private bool _2Turns;
+    private bool _minigame = true;
+
+    public void SetFullboard(bool value)
+    {
+        _fullboard = value;
+    }
+
+    public void Set2Turns(bool value)
+    {
+        _2Turns = value;
+    }
+
+    public void SetMinigame(bool value)
+    {
+        _minigame = value;
+    }
+
     private void Awake()
     {
         Instance = this;
         RegisterEvents();
-        FullBoardToggle.onValueChanged.AddListener(delegate
+        /*FullBoardToggle.onValueChanged.AddListener(delegate
         {
             PartialBoardPanel.SetActive(!FullBoardToggle.isOn);
             if (!FullBoardToggle.isOn) {
@@ -71,7 +92,7 @@ public class GameUI : MonoBehaviour
                 SelectAttackingDisposition(DispositionType.None);
                 ScaleButtons(null);
             }
-        });
+        });*/
         for(var i = 0; i < DispositionButtonsAttacking.Length; i++)
         {
             var disposition = (DispositionType)(i+1);
@@ -80,32 +101,57 @@ public class GameUI : MonoBehaviour
             buttonAttacking.onClick.AddListener(delegate
             {
                 SelectAttackingDisposition(disposition);
-                ScaleButtons(buttonAttacking);
             });
             buttonDefending.onClick.AddListener(delegate
             {
                 SelectDefendingDisposition(disposition);
-                ScaleButtons(buttonDefending);
             });
         }
     }
 
-    private void ScaleButtons(Button highlighted)
+    /*private void ScaleButtons(Button highlighted)
     {
         foreach (var button in DispositionButtonsAttacking)
             button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
         foreach (var button in DispositionButtonsDefending)
             button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
+    }*/
+
+    private void ScaleButtons(bool attacking, int index)
+    {
+        if (attacking)
+        {
+            for (var i = 0; i < DispositionButtonsAttacking.Length; i++)
+            {
+                DispositionButtonsAttacking[i].transform.localScale =
+                    i == index ? new Vector3(1.2f, 1.8f, 1.2f) : Vector3.one;
+            }
+        }
+        else
+        {
+            for (var i = 0; i < DispositionButtonsDefending.Length; i++)
+            {
+                DispositionButtonsDefending[i].transform.localScale =
+                    i == index ? new Vector3(1.2f, 1.8f, 1.2f) : Vector3.one;
+            }
+        }
     }
 
-    private void SelectAttackingDisposition(DispositionType dispositionType)
+    public void SelectAttackingDisposition(DispositionType dispositionType)
     {
         _selectedAttackingDisposition = dispositionType;
+        ScaleButtons(true, ((int) dispositionType - 1));
+    }
+
+    public DispositionType GetSelectedAttackingDisposition()
+    {
+        return _selectedAttackingDisposition;
     }
 
     private void SelectDefendingDisposition(DispositionType dispositionType)
     {
         _selectedDefendingDisposition = dispositionType;
+        ScaleButtons(false, ((int) dispositionType - 1));
     }
 
     public void QuitEverything()
@@ -123,6 +169,8 @@ public class GameUI : MonoBehaviour
             EventSystem.SetActive(true);
             ZoomOut();
         }
+
+        ConnectButton.interactable = AddressInput.text != "";
     }
 
     private void ZoomOut()
@@ -237,19 +285,17 @@ public class GameUI : MonoBehaviour
     public void OnHostMenuButton()
     {
         MenuAnimator.SetTrigger(HostMenu);
-        SelectAttackingDisposition(DispositionType.Heavy);
-        ScaleButtons(DispositionButtonsAttacking[0]);
+        //SelectAttackingDisposition(DispositionType.Heavy);
     }
 
     public void OnFindMenuButton()
     {
         MenuAnimator.SetTrigger(FindAMatchMenu);
         SelectDefendingDisposition(DispositionType.Heavy);
-        ScaleButtons(DispositionButtonsDefending[0]);
     }
     public void OnHostHostButton()
     {
-        MatchConfiguration.SetGameUIConfigurationP1(FullBoardToggle.isOn, _selectedAttackingDisposition, NumberOfTurnsToggle.isOn, MiniGameToggle.isOn);
+        MatchConfiguration.SetGameUIConfigurationP1(_fullboard, _selectedAttackingDisposition, _2Turns, _minigame);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
         //_localGame = false;
@@ -282,7 +328,9 @@ public class GameUI : MonoBehaviour
     public void OnPlaylistsButton(){
         if(!_playlistsMenu){
             PlaylistsMenu.SetActive(true);
+            PlaylistsMenu.transform.GetComponent<PlaylistsModeManager>().Visible = true;
             CustomMatchMenu.SetActive(false);
+            CustomMatchMenu.transform.GetComponent<CustomModeManager>().Visible = false;
             _playlistsMenu = true;
         }
     }
@@ -290,7 +338,9 @@ public class GameUI : MonoBehaviour
     public void OnCustomMatchButton(){
         if(_playlistsMenu){
             CustomMatchMenu.SetActive(true);
+            CustomMatchMenu.transform.GetComponent<CustomModeManager>().Visible = true;
             PlaylistsMenu.SetActive(false);
+            PlaylistsMenu.transform.GetComponent<PlaylistsModeManager>().Visible = false;
             _playlistsMenu = false;
         }
     }
@@ -309,6 +359,33 @@ public class GameUI : MonoBehaviour
     private void OnStartGameClient(NetMessage msg)
     {
         MenuAnimator.SetTrigger(InGameMenu);
+        StartCoroutine(FadeOutPcs(2f));
+    }
+
+
+    private IEnumerator FadeOutPcs(float duration)
+    {
+        var timeElapsed = 0f;
+        var alphaStart = Image2.color.a;
+        while (timeElapsed < duration)
+        {
+            var t = timeElapsed / duration;
+            t = t * t * (3f - 2f * t);
+            var color1 = Image1.color;
+            var color2 = Image2.color;
+            color1.a = Mathf.Lerp(1, 0, t);
+            color2.a = Mathf.Lerp(alphaStart, 0, t);
+            timeElapsed += Time.deltaTime;
+            Image1.color = color1;
+            Image2.color = color2;
+            yield return null;
+        }
+        var color1Fin = Image1.color;
+        color1Fin.a = 0f;
+        var color2Fin = Image2.color;
+        color2Fin.a = 0f;
+        Image1.color = color1Fin;
+        Image2.color = color2Fin;
     }
     #endregion
 }

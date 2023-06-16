@@ -521,10 +521,12 @@ public class ChessBoardConfrontation : MonoBehaviour
             {
                 ChessPieceType.Pawn => 3,
                 ChessPieceType.Knight => 2,
+                ChessPieceType.King => 2,
                 ChessPieceType.Queen => 0,
                 _ => 1
             };
             AttackPanelManager.EnableAppropriateAttacks(numberOfAttacksToRemove);
+            AttackPanelManager.SetAttackingType(_attacking.Type);
         }
         HpSlider.value = _defending.GetHp();
         //Debug.Log($"Initial hp slider value: {HpSlider.value}");

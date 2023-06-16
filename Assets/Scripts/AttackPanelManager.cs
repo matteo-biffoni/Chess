@@ -1,17 +1,62 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ChessPieces;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class AttackPanelManager : MonoBehaviour
 {
     [SerializeField] private GameObject[] Panels;
+    [SerializeField] private Sprite NormalAttack;
+    //[SerializeField] private Sprite Pawn1;
+    [SerializeField] private Sprite Bishop1;
+    [SerializeField] private Sprite Bishop2;
+    [SerializeField] private Sprite Knight1;
+    [SerializeField] private Sprite Rook1;
+    [SerializeField] private Sprite Rook2;
+    [SerializeField] private Sprite Queen1;
+    [SerializeField] private Sprite Queen2;
+    [SerializeField] private Sprite Queen3;
+    [SerializeField] private Sprite King1;
     private uint _selectedAttack;
 
     private void Start()
     {
         SelectAttack(0);
+    }
+
+    public void SetAttackingType(ChessPieceType chessPieceType)
+    {
+        Panels[0].GetComponent<Image>().sprite = NormalAttack;
+        switch (chessPieceType)
+        {
+            case ChessPieceType.None:
+                break;
+            case ChessPieceType.Pawn:
+                break;
+            case ChessPieceType.Rook:
+                Panels[1].GetComponent<Image>().sprite = Rook1;
+                Panels[2].GetComponent<Image>().sprite = Rook2;
+                break;
+            case ChessPieceType.Knight:
+                Panels[1].GetComponent<Image>().sprite = Knight1;
+                break;
+            case ChessPieceType.Bishop:
+                Panels[1].GetComponent<Image>().sprite = Bishop1;
+                Panels[2].GetComponent<Image>().sprite = Bishop2;
+                break;
+            case ChessPieceType.Queen:
+                Panels[1].GetComponent<Image>().sprite = Queen1;
+                Panels[2].GetComponent<Image>().sprite = Queen2;
+                Panels[3].GetComponent<Image>().sprite = Queen3;
+                break;
+            case ChessPieceType.King:
+                Panels[1].GetComponent<Image>().sprite = King1;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(chessPieceType), chessPieceType, null);
+        }
     }
 
     public void EnableAppropriateAttacks(int attacksToRemove)

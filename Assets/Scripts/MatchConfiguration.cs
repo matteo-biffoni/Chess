@@ -28,6 +28,7 @@ public class MatchConfiguration
             Turns = turns,
             MiniGame = miniGame
         };
+        Debug.Log(_fromGameUI);
     }
 
     public static void SetGameUIConfigurationP2(DispositionType dispositionDefending)

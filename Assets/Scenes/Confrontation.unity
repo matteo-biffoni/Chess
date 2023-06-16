@@ -578,8 +578,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 30, y: -30}
-  m_SizeDelta: {x: 400, y: 100}
+  m_AnchoredPosition: {x: 30, y: -20}
+  m_SizeDelta: {x: 400, y: 150}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &324502136
 MonoBehaviour:
@@ -601,8 +601,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 9d9384162a80bec4a8cca9eebc8edb41, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1272,10 +1272,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 5
+  m_text: 15
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b43376894c4a3f54bbce7aa12db22809, type: 2}
+  m_sharedMaterial: {fileID: -195410610376853167, guid: b43376894c4a3f54bbce7aa12db22809, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1299,15 +1299,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 50
+  m_fontSize: 60
+  m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 1024
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1410,6 +1410,16 @@ MonoBehaviour:
   - {fileID: 1963426892}
   - {fileID: 912382422}
   - {fileID: 762455250}
+  NormalAttack: {fileID: 21300000, guid: 1c00cb74a44848f4d95ad2e12a837cad, type: 3}
+  Bishop1: {fileID: 21300000, guid: 5d03a30bb51cd4f49acacb2b5662b96f, type: 3}
+  Bishop2: {fileID: 21300000, guid: 516eb97821dbc834da88766dafd43033, type: 3}
+  Knight1: {fileID: 21300000, guid: 1cc4b5123eb9d49438b4bbc043d904de, type: 3}
+  Rook1: {fileID: 21300000, guid: 43e5ee9e9f27afc4eb68d1b3fbd63076, type: 3}
+  Rook2: {fileID: 21300000, guid: d1e12d93589c23b429f6169736dd5732, type: 3}
+  Queen1: {fileID: 21300000, guid: 7de048cc4491fe746875742a6ab3dbd9, type: 3}
+  Queen2: {fileID: 21300000, guid: 337d945673c4c9349b217f29fd835891, type: 3}
+  Queen3: {fileID: 21300000, guid: be5b6b40ae96868489a567ad372a162b, type: 3}
+  King1: {fileID: 21300000, guid: be5b6b40ae96868489a567ad372a162b, type: 3}
 --- !u!114 &1247105706
 MonoBehaviour:
   m_ObjectHideFlags: 0
