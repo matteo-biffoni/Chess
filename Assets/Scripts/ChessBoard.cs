@@ -588,22 +588,6 @@ public class ChessBoard : MonoBehaviour
     }
     public void OnRematchButton()
     {
-        /*if (_localGame)
-        {
-            var wnr = new NetRematch()
-            {
-                TeamID = 0,
-                WantRematch = 1
-            };
-            Client.Instance.SendToServer(wnr);
-            var bnr = new NetRematch()
-            {
-                TeamID = 1,
-                WantRematch = 1
-            };
-            Client.Instance.SendToServer(bnr);
-        }
-        else*/
         {
             var nr = new NetRematch()
             {

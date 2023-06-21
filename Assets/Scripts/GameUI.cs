@@ -76,6 +76,7 @@ public class GameUI : MonoBehaviour
         _minigame = value;
     }
 
+
     private void Awake()
     {
         Instance = this;
@@ -323,6 +324,7 @@ public class GameUI : MonoBehaviour
     {
         ChangeCamera(CameraAngle.Menu);
         MenuAnimator.SetTrigger(StartMenu);
+        StartCoroutine(FadeInPcs(2f));
     }
 
     public void OnPlaylistsButton(){
@@ -343,6 +345,28 @@ public class GameUI : MonoBehaviour
             PlaylistsMenu.transform.GetComponent<PlaylistsModeManager>().Visible = false;
             _playlistsMenu = false;
         }
+    }
+
+    private IEnumerator FadeInPcs(float duration){
+        var timeElapsed = 0f;
+        var alphaStart = Image2.color.a;
+        while (timeElapsed < duration)
+        {
+            var t = timeElapsed / duration;
+            t = t * t * (3f - 2f * t);
+            var color1 = Image1.color;
+            var color2 = Image2.color;
+            color1.a = Mathf.Lerp(0, 1, t);
+            color2.a = Mathf.Lerp(alphaStart, 0, t);
+            timeElapsed += Time.deltaTime;
+            Image1.color = color1;
+            Image2.color = color2;
+            yield return null;
+        }
+        var color1Fin = Image1.color;
+        var color2Fin = Image2.color;
+        Image1.color = color1Fin;
+        Image2.color = color2Fin;
     }
 
 
@@ -367,6 +391,7 @@ public class GameUI : MonoBehaviour
     {
         var timeElapsed = 0f;
         var alphaStart = Image2.color.a;
+        Debug.Log("Alphastart is " + alphaStart);
         while (timeElapsed < duration)
         {
             var t = timeElapsed / duration;

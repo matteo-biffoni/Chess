@@ -52,21 +52,23 @@ public class PlaylistsModeManager : MonoBehaviour
             _selectedIndex = i;
             Selections[i].GetComponent<Image>().color = SelectedColor;
             Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = SelectedTextColor;
-            if (i >= 4)
-            {
-                DispositionPanel.SetActive(false);
-                GameUI.SelectAttackingDisposition(DispositionType.None);
-            }
-            else
-            {
+
+            var playlist = PlaylistSelection.Playlists[_selectedIndex];
+
+            if(!playlist.GetFullboard()){
                 DispositionPanel.SetActive(true);
                 GameUI.SelectAttackingDisposition(DispositionType.Heavy);
             }
+            else{
+                DispositionPanel.SetActive(false);
+                GameUI.SelectAttackingDisposition(DispositionType.None);
+            }
 
-            var playlist = PlaylistSelection.Playlists[_selectedIndex];
             GameUI.SetFullboard(playlist.GetFullboard());
             GameUI.Set2Turns(playlist.Get2Turns());
             GameUI.SetMinigame(playlist.GetMinigame());
+
+            
         }
     }
 
