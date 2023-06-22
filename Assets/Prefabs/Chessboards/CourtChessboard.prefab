@@ -2259,12 +2259,8 @@ MonoBehaviour:
   MovesUI: {fileID: 0}
   FightWithConfrontation: 1
   TwoMoves: 1
-  FullBoardText: {fileID: 0}
-  DispositionAttackingText: {fileID: 0}
-  DispositionDefendingText: {fileID: 0}
-  OneMoveTurnText: {fileID: 0}
-  MiniGameText: {fileID: 0}
   HpIndicators: {fileID: 1267873330}
+  TurnIndicator: {fileID: 0}
 --- !u!1 &5389894808236254442
 GameObject:
   m_ObjectHideFlags: 0

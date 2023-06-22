@@ -363,10 +363,6 @@ public class GameUI : MonoBehaviour
             Image2.color = color2;
             yield return null;
         }
-        var color1Fin = Image1.color;
-        var color2Fin = Image2.color;
-        Image1.color = color1Fin;
-        Image2.color = color2Fin;
     }
 
 
@@ -391,7 +387,6 @@ public class GameUI : MonoBehaviour
     {
         var timeElapsed = 0f;
         var alphaStart = Image2.color.a;
-        Debug.Log("Alphastart is " + alphaStart);
         while (timeElapsed < duration)
         {
             var t = timeElapsed / duration;
@@ -411,6 +406,7 @@ public class GameUI : MonoBehaviour
         color2Fin.a = 0f;
         Image1.color = color1Fin;
         Image2.color = color2Fin;
+        StartCoroutine(ChessBoard.ShowTurnIndicator());
     }
     #endregion
 }

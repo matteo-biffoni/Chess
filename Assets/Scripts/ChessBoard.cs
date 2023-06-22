@@ -5,6 +5,7 @@ using System.Linq;
 using ChessPieces;
 using Net;
 using Net.NetMessages;
+using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,6 +71,7 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private TMP_Text MiniGameText;*/
 
     [SerializeField] private GameObject HpIndicators;
+    [SerializeField] private TMP_Text TurnIndicator;
     
     // Logic
     private ChessPiece[,] _chessPieces;
@@ -128,13 +130,57 @@ public class ChessBoard : MonoBehaviour
         }
         else
         {
+            for (var i = 0; i < HpIndicators.transform.childCount; i++)
+            {
+                HpIndicators.transform.GetChild(i).localRotation = Quaternion.Euler(35f, 0f, 0f);
+            }
             GameUI.Instance.ChangeCamera(CameraAngle.WhiteTeam);
         }
+        TurnIndicator.text = "It's bugs' turn";
     }
 
     private GameObject GetHpIndicator(int x, int y)
     {
         return HpIndicators.transform.GetChild(TileCountY * y + x).gameObject;
+    }
+
+    public IEnumerator ShowTurnIndicator()
+    {
+        var timeElapsed = 0f;
+        var duration = 0.5f;
+        while (timeElapsed < duration)
+        {
+            var t = timeElapsed / duration;
+            t = t * t * (3f - 2f * t);
+            var color = TurnIndicator.color;
+            color.a = Mathf.Lerp(0, 1, t);
+            timeElapsed += Time.deltaTime;
+            TurnIndicator.color = color;
+            yield return null;
+        }
+        var colorJ = TurnIndicator.color;
+        colorJ.a = 1f;
+        TurnIndicator.color = colorJ;
+    }
+
+    private IEnumerator HideTurnIndicator()
+    {
+        var timeElapsed = 0f;
+        var duration = 0.5f;
+        while (timeElapsed < duration)
+        {
+            var t = timeElapsed / duration;
+            t = t * t * (3f - 2f * t);
+            var color = TurnIndicator.color;
+            color.a = Mathf.Lerp(1, 0, t);
+            timeElapsed += Time.deltaTime;
+            TurnIndicator.color = color;
+            yield return null;
+        }
+
+        var colorA = TurnIndicator.color;
+        colorA.a = 0;
+        TurnIndicator.color = colorA;
     }
 
     private void Update()
@@ -145,6 +191,7 @@ public class ChessBoard : MonoBehaviour
             return;
         }
         if (!_setupDone) return;
+        TurnIndicator.text = _isWhiteTurn ? "It's bugs' turn" : "It's vegetables' turn";
         var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
         {
@@ -579,6 +626,7 @@ public class ChessBoard : MonoBehaviour
     // Checkmate
     private void CheckMate(int team)
     {
+        StartCoroutine(HideTurnIndicator());
         DisplayVictory(team);
     }
     private void DisplayVictory(int winningTeam)
@@ -595,10 +643,14 @@ public class ChessBoard : MonoBehaviour
                 WantRematch = 1
             };
             Client.Instance.SendToServer(nr);
+            RematchButton.GetComponent<Button>().interactable = false;
         }
     }
     private void GameReset()
     {
+        _configurationSetup[0] = _configurationSetup[1] = false;
+        _setupDone = false;
+        MovesUI.ClearMoves();
         RematchButton.GetComponent<Button>().interactable = true;
         RematchIndicator.SetActive(false);
         AcceptedRematch.SetActive(false);
@@ -607,6 +659,7 @@ public class ChessBoard : MonoBehaviour
         VictoryScreen.transform.GetChild(1).gameObject.SetActive(false);
         VictoryScreen.SetActive(false);
         _currentlyDragging = null;
+        _currentHover = new Vector2Int();
         _availableMoves.Clear();
         _moveList.Clear();
         _playerRematch[0] = _playerRematch[1] = false;
@@ -621,12 +674,20 @@ public class ChessBoard : MonoBehaviour
             Destroy(deadWhite.gameObject);
         foreach (var deadBlack in _deadBlacks)
             Destroy(deadBlack.gameObject);
+        foreach (var tile in _tiles)
+        {
+            Destroy(tile);
+        }
         _deadWhites.Clear();
         _deadBlacks.Clear();
-        
-        SpawnAllPieces();
-        PositionAllPieces();
         _isWhiteTurn = true;
+        _playerCount = -1;
+        _currentTeam = -1;
+        _movesInTurn = 0;
+        for (var i = 0; i < HpIndicators.transform.childCount; i++)
+        {
+            HpIndicators.transform.GetChild(i).gameObject.SetActive(false);
+        }
         /*if (_localGame)
         {
             _currentTeam = 0;

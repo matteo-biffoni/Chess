@@ -73,4 +73,12 @@ public class MovesUI : MonoBehaviour
     {
         return $"{Convert.ToChar('A' + pos.x)}{pos.y + 1}";
     }
+
+    public void ClearMoves()
+    {
+        for (var i = 0; i < transform.childCount; i++)
+        {
+            Destroy(transform.GetChild(i).gameObject);
+        }
+    }
 }
