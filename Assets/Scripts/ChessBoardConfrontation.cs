@@ -48,6 +48,8 @@ public class ChessBoardConfrontation : MonoBehaviour
     [SerializeField] private GameObject MovableTexturePrefab;
     [SerializeField] private GameObject FiredTexturePrefab;
 
+    [SerializeField] private MinigameEffectsManager MinigameEffectsManager;
+
     private bool _timeElapsed;
     
     private GameObject[,] _tiles;
@@ -151,7 +153,7 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (!ConfrontationListener.IsAttacking)
         {
-            FireCell(new Vector2Int(nnaic.DestinationX, nnaic.DestinationY));
+            FireCell(new Vector2Int(nnaic.DestinationX, nnaic.DestinationY), _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs);
         }
     }
 
@@ -217,8 +219,10 @@ public class ChessBoardConfrontation : MonoBehaviour
         HighlightTiles();
     }
 
-    private void FireCell(Vector2Int cell)
+    private void FireCell(Vector2Int cell, AttackType attackType)
     {
+        
+        StartCoroutine(MinigameEffectsManager.SpawnAttack(attackType, GetTileCenter(cell.x, cell.y)));
         // Mettere preavviso
         _firedCells[cell.x, cell.y]++;
         _tiles[cell.x, cell.y].transform.GetComponent<TileInConfrontationHandler>().SetFired(true);
@@ -230,14 +234,14 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         if (_attacking.Type == ChessPieceType.None) return;
         foreach (var firedCell in _attacking.GetSpecialAttack1Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell);
+            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
     }
 
     private void SpecialAttack2(Vector2Int cell)
     {
         if (_attacking.Type is ChessPieceType.Pawn or ChessPieceType.None) return;
         foreach (var firedCell in _attacking.GetSpecialAttack2Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell);
+            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
     }
     
 
@@ -245,7 +249,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         if (_attacking.Type != ChessPieceType.Queen) return;
         foreach (var firedCell in _attacking.GetSpecialAttack3Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell);
+            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
     }
 
     private IEnumerator UnFireCellAfterXSec(Vector2Int cell, int sec)
@@ -316,7 +320,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                             _canFireNormalAttack = false;
                             StartCoroutine(ResetNormalAttackAfterInterval());
                             StartCoroutine(AttackPanelManager.Attack(0, NormalAttackInterval));
-                            FireCell(hitPosition);
+                            FireCell(hitPosition, _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs);
                             var nnaic = new NetNormalAttackInConfrontation
                             {
                                 DestinationX = hitPosition.x,
@@ -507,6 +511,7 @@ public class ChessBoardConfrontation : MonoBehaviour
         _attacking.CurrentX = 9;
         _attacking.CurrentY = 4;
         _attacking.SetConfrontationAim(GetTileCenter(9, 4));
+        MinigameEffectsManager.SetStartingPoint(GetTileCenter(9, 4));
         
         _board[4, 4] = _defending;
         if (!ConfrontationListener.IsAttacking)
