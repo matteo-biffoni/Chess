@@ -50,10 +50,6 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private float DeathSize = 0.03f;
     [SerializeField] private float DeathSpacing = 0.1f;
     [SerializeField] private GameObject VictoryScreen;
-    [SerializeField] private GameObject RematchIndicator;
-    [SerializeField] private GameObject AcceptedRematch;
-    [SerializeField] private GameObject LeftRematch;
-    [SerializeField] private GameObject RematchButton;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject[] BugsPrefabs;
@@ -63,12 +59,6 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] private MovesUI MovesUI;
     [SerializeField] private bool FightWithConfrontation = true;
     [SerializeField] private bool TwoMoves = true;
-
-    /*[SerializeField] private TMP_Text FullBoardText;
-    [SerializeField] private TMP_Text DispositionAttackingText;
-    [SerializeField] private TMP_Text DispositionDefendingText;
-    [SerializeField] private TMP_Text OneMoveTurnText;
-    [SerializeField] private TMP_Text MiniGameText;*/
 
     [SerializeField] private GameObject HpIndicators;
     [SerializeField] private TMP_Text TurnIndicator;
@@ -634,7 +624,7 @@ public class ChessBoard : MonoBehaviour
         VictoryScreen.SetActive(true);
         VictoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
     }
-    public void OnRematchButton()
+    /*public void OnRematchButton()
     {
         {
             var nr = new NetRematch()
@@ -645,16 +635,16 @@ public class ChessBoard : MonoBehaviour
             Client.Instance.SendToServer(nr);
             RematchButton.GetComponent<Button>().interactable = false;
         }
-    }
+    }*/
     private void GameReset()
     {
         _configurationSetup[0] = _configurationSetup[1] = false;
         _setupDone = false;
         MovesUI.ClearMoves();
-        RematchButton.GetComponent<Button>().interactable = true;
+        /*RematchButton.GetComponent<Button>().interactable = true;
         RematchIndicator.SetActive(false);
         AcceptedRematch.SetActive(false);
-        LeftRematch.SetActive(false);
+        LeftRematch.SetActive(false);*/
         VictoryScreen.transform.GetChild(0).gameObject.SetActive(false);
         VictoryScreen.transform.GetChild(1).gameObject.SetActive(false);
         VictoryScreen.SetActive(false);
@@ -1025,14 +1015,14 @@ public class ChessBoard : MonoBehaviour
     {
         NetUtility.SWelcome += OnWelcomeServer;
         NetUtility.SMakeMove += OnMakeMoveServer;
-        NetUtility.SRematch += OnRematchServer;
+        //NetUtility.SRematch += OnRematchServer;
         NetUtility.SCreateConfrontation += OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation += OnResolveConfrontationServer;
         NetUtility.SMatchConfiguration += OnMatchConfigurationServer;
         NetUtility.CWelcome += OnWelcomeClient;
         NetUtility.CStartGame += OnStartGameClient;
         NetUtility.CMakeMove += OnMakeMoveClient;
-        NetUtility.CRematch += OnRematchClient;
+        //NetUtility.CRematch += OnRematchClient;
         NetUtility.CCreateConfrontation += OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation += OnResolveConfrontationClient;
         NetUtility.CMatchConfiguration += OnMatchConfigurationClient;
@@ -1043,14 +1033,14 @@ public class ChessBoard : MonoBehaviour
     {
         NetUtility.SWelcome -= OnWelcomeServer;
         NetUtility.SMakeMove -= OnMakeMoveServer;
-        NetUtility.SRematch -= OnRematchServer;
+        //NetUtility.SRematch -= OnRematchServer;
         NetUtility.SCreateConfrontation -= OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation -= OnResolveConfrontationServer;
         NetUtility.SMatchConfiguration -= OnMatchConfigurationServer;
         NetUtility.CWelcome -= OnWelcomeClient;
         NetUtility.CStartGame -= OnStartGameClient;
         NetUtility.CMakeMove -= OnMakeMoveClient;
-        NetUtility.CRematch -= OnRematchClient;
+        //NetUtility.CRematch -= OnRematchClient;
         NetUtility.CCreateConfrontation -= OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation -= OnResolveConfrontationClient;
         NetUtility.CMatchConfiguration -= OnMatchConfigurationClient;
@@ -1087,10 +1077,10 @@ public class ChessBoard : MonoBehaviour
         }
         Server.Instance.Broadcast(mm);
     }
-    private void OnRematchServer(NetMessage msg, NetworkConnection cnn)
+    /*private void OnRematchServer(NetMessage msg, NetworkConnection cnn)
     {
         Server.Instance.Broadcast(msg);
-    }
+    }*/
 
     private void OnCreateConfrontationServer(NetMessage msg, NetworkConnection cnn)
     {
@@ -1174,7 +1164,7 @@ public class ChessBoard : MonoBehaviour
             MoveTo(mm.OriginalX, mm.OriginalY, mm.DestinationX, mm.DestinationY);
         }
     }
-    private void OnRematchClient(NetMessage msg)
+    /*private void OnRematchClient(NetMessage msg)
     {
         if (msg is not NetRematch nr)
         {
@@ -1194,7 +1184,7 @@ public class ChessBoard : MonoBehaviour
         }
         if (_playerRematch[0] && _playerRematch[1])
             GameReset();
-    }
+    }*/
     private void OnCreateConfrontationClient(NetMessage msg)
     {
         if (msg is not NetCreateConfrontation ncc)

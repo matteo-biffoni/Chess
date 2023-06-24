@@ -83,7 +83,7 @@ namespace Net
         public static Action<NetMessage> CWelcome;
         public static Action<NetMessage> CStartGame;
         public static Action<NetMessage> CMakeMove;
-        public static Action<NetMessage> CRematch;
+        //public static Action<NetMessage> CRematch;
         public static Action<NetMessage> CCreateConfrontation;
         public static Action<NetMessage> CResolveConfrontation;
         public static Action<NetMessage> CMakeMoveInConfrontation;
@@ -95,7 +95,7 @@ namespace Net
         public static Action<NetMessage, NetworkConnection> SWelcome;
         public static Action<NetMessage, NetworkConnection> SStartGame;
         public static Action<NetMessage, NetworkConnection> SMakeMove;
-        public static Action<NetMessage, NetworkConnection> SRematch;
+        //public static Action<NetMessage, NetworkConnection> SRematch;
         public static Action<NetMessage, NetworkConnection> SCreateConfrontation;
         public static Action<NetMessage, NetworkConnection> SResolveConfrontation;
         public static Action<NetMessage, NetworkConnection> SMakeMoveInConfrontation;

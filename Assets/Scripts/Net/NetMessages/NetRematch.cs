@@ -28,11 +28,11 @@ namespace Net.NetMessages
         }
         public override void ReceivedOnClient()
         {
-            NetUtility.CRematch?.Invoke(this);
+            //NetUtility.CRematch?.Invoke(this);
         }
         public override void ReceivedOnServer(NetworkConnection cnn)
         {
-            NetUtility.SRematch.Invoke(this, cnn);
+            //NetUtility.SRematch.Invoke(this, cnn);
         }
     }
 }

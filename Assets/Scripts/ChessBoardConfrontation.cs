@@ -17,7 +17,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     private ChessPiece _defending;
     private ChessPiece _defendingConfrontation;
 
-    public static ChessBoardConfrontation Instance { get; set; }
+    private static ChessBoardConfrontation Instance { get; set; }
 
     [SerializeField] private GameObject BackgroundGo;
     [SerializeField] private AttackPanelManager AttackPanelManager;
@@ -573,6 +573,9 @@ public class ChessBoardConfrontation : MonoBehaviour
                     new Vector3(0.7f, 0.7f, 0.7f), Time.deltaTime * speed);
                 yield return null;
             }
+
+            if (Confrontation.GetCurrentOutcome() != Outcome.NotAvailable)
+                break;
         }
     }
     
