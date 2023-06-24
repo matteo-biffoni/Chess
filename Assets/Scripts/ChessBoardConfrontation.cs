@@ -153,7 +153,7 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (!ConfrontationListener.IsAttacking)
         {
-            FireCell(new Vector2Int(nnaic.DestinationX, nnaic.DestinationY), _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs);
+            StartCoroutine(FireCell(new Vector2Int(nnaic.DestinationX, nnaic.DestinationY), _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs, 0));
         }
     }
 
@@ -219,10 +219,39 @@ public class ChessBoardConfrontation : MonoBehaviour
         HighlightTiles();
     }
 
-    private void FireCell(Vector2Int cell, AttackType attackType)
+    private IEnumerator FireCell(Vector2Int cell, AttackType attackType, int which)
     {
-        
+        yield return MinigameEffectsManager.SpawnProjectile(GetTileCenter(cell.x, cell.y));
         StartCoroutine(MinigameEffectsManager.SpawnAttack(attackType, GetTileCenter(cell.x, cell.y)));
+        StartCoroutine(ResetNormalAttackAfterInterval());
+        if (ConfrontationListener.IsAttacking)
+        {
+            switch (attackType)
+            {
+                case AttackType.NormalBugs or AttackType.NormalVegs:
+                    StartCoroutine(AttackPanelManager.Attack(0, NormalAttackInterval));
+                    break;
+                case AttackType.SpecialBugs or AttackType.SpecialVegs:
+                    switch (which)
+                    {
+                        case 1:
+                            StartCoroutine(ResetSpecialAttack1AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(1, SpecialAttack1Interval));
+                            break;
+                        case 2:
+                            StartCoroutine(ResetSpecialAttack2AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(2, SpecialAttack2Interval));
+                            break;
+                        case 3:
+                            StartCoroutine(ResetSpecialAttack3AfterInterval());
+                            StartCoroutine(AttackPanelManager.Attack(3, SpecialAttack3Interval));
+                            break;
+                    }
+
+                    break;
+            }
+        }
+
         // Mettere preavviso
         _firedCells[cell.x, cell.y]++;
         _tiles[cell.x, cell.y].transform.GetComponent<TileInConfrontationHandler>().SetFired(true);
@@ -234,14 +263,14 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         if (_attacking.Type == ChessPieceType.None) return;
         foreach (var firedCell in _attacking.GetSpecialAttack1Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
+            StartCoroutine(FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs, 1));
     }
 
     private void SpecialAttack2(Vector2Int cell)
     {
         if (_attacking.Type is ChessPieceType.Pawn or ChessPieceType.None) return;
         foreach (var firedCell in _attacking.GetSpecialAttack2Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
+            StartCoroutine(FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs, 2));
     }
     
 
@@ -249,7 +278,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         if (_attacking.Type != ChessPieceType.Queen) return;
         foreach (var firedCell in _attacking.GetSpecialAttack3Cells(cell, TileCountX, TileCountY))
-            FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs);
+            StartCoroutine(FireCell(firedCell, _attacking.Team == 0 ? AttackType.SpecialBugs : AttackType.SpecialVegs, 3));
     }
 
     private IEnumerator UnFireCellAfterXSec(Vector2Int cell, int sec)
@@ -318,9 +347,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                     {
                         case 0 when _canFireNormalAttack:
                             _canFireNormalAttack = false;
-                            StartCoroutine(ResetNormalAttackAfterInterval());
-                            StartCoroutine(AttackPanelManager.Attack(0, NormalAttackInterval));
-                            FireCell(hitPosition, _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs);
+                            StartCoroutine(FireCell(hitPosition, _attacking.Team == 0 ? AttackType.NormalBugs : AttackType.NormalVegs, 0));
                             var nnaic = new NetNormalAttackInConfrontation
                             {
                                 DestinationX = hitPosition.x,
@@ -330,8 +357,6 @@ public class ChessBoardConfrontation : MonoBehaviour
                             break;
                         case 1 when _canFireSpecialAttack1:
                             _canFireSpecialAttack1 = false;
-                            StartCoroutine(ResetSpecialAttack1AfterInterval());
-                            StartCoroutine(AttackPanelManager.Attack(1, SpecialAttack1Interval));
                             SpecialAttack1(hitPosition);
                             var nsaic1 = new NetSpecialAttackInConfrontation
                             {
@@ -343,8 +368,6 @@ public class ChessBoardConfrontation : MonoBehaviour
                             break;
                         case 2 when _canFireSpecialAttack2:
                             _canFireSpecialAttack2 = false;
-                            StartCoroutine(ResetSpecialAttack2AfterInterval());
-                            StartCoroutine(AttackPanelManager.Attack(2, SpecialAttack2Interval));
                             SpecialAttack2(hitPosition);
                             var nsaic2 = new NetSpecialAttackInConfrontation
                             {
@@ -356,8 +379,6 @@ public class ChessBoardConfrontation : MonoBehaviour
                             break;
                         case 3 when _canFireSpecialAttack3:
                             _canFireSpecialAttack3 = false;
-                            StartCoroutine(ResetSpecialAttack3AfterInterval());
-                            StartCoroutine(AttackPanelManager.Attack(3, SpecialAttack3Interval));
                             SpecialAttack3(hitPosition);
                             var nsaic3 = new NetSpecialAttackInConfrontation
                             {

@@ -9,10 +9,13 @@ public class PlaylistsModeManager : MonoBehaviour
 {
     [SerializeField] private Color NormalColor;
     [SerializeField] private Color NormalTextColor;
+    [SerializeField] private Color NormalSubtextColor;
     [SerializeField] private Color HoverColor;
     [SerializeField] private Color HoverTextColor;
+    [SerializeField] private Color HoverSubtextColor;
     [SerializeField] private Color SelectedColor;
     [SerializeField] private Color SelectedTextColor;
+    [SerializeField] private Color SelectedSubtextColor;
     [SerializeField] private Button[] Selections;
     [SerializeField] private Button HostButton;
     private int _selectedIndex = -1;
@@ -26,6 +29,9 @@ public class PlaylistsModeManager : MonoBehaviour
     {
         Selections[i].GetComponent<Image>().color = HoverColor;
         Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = HoverTextColor;
+        Selections[i].transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().color = HoverSubtextColor;
+        Selections[i].transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = HoverSubtextColor;
+        Selections[i].transform.GetChild(1).GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = HoverSubtextColor;
         //Selections[i].transform.GetChild(1).gameObject.SetActive(true);
     }
 
@@ -35,11 +41,17 @@ public class PlaylistsModeManager : MonoBehaviour
         {
             Selections[i].GetComponent<Image>().color = NormalColor;
             Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = NormalTextColor;
+            Selections[i].transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
         }
         else
         {
             Selections[i].GetComponent<Image>().color = SelectedColor;
             Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = SelectedTextColor;
+            Selections[i].transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
         }
         //Selections[i].transform.GetChild(1).gameObject.SetActive(false);
     }
@@ -52,6 +64,9 @@ public class PlaylistsModeManager : MonoBehaviour
             _selectedIndex = i;
             Selections[i].GetComponent<Image>().color = SelectedColor;
             Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = SelectedTextColor;
+            Selections[i].transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
+            Selections[i].transform.GetChild(1).GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = SelectedSubtextColor;
 
             var playlist = PlaylistSelection.Playlists[_selectedIndex];
 
@@ -77,6 +92,9 @@ public class PlaylistsModeManager : MonoBehaviour
         if (i == -1) return;
         Selections[i].GetComponent<Image>().color = NormalColor;
         Selections[i].transform.GetChild(0).GetComponent<TMP_Text>().color = NormalTextColor;
+        Selections[i].transform.GetChild(1).GetChild(0).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
+        Selections[i].transform.GetChild(1).GetChild(1).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
+        Selections[i].transform.GetChild(1).GetChild(2).GetChild(0).GetComponent<TMP_Text>().color = NormalSubtextColor;
     }
 
     private void Update()

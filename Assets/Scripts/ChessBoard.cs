@@ -228,6 +228,7 @@ public class ChessBoard : MonoBehaviour
                     if ((_chessPieces[hitPosition.x, hitPosition.y].Team == 0 && _isWhiteTurn && _currentTeam == 0) ||
                         (_chessPieces[hitPosition.x, hitPosition.y].Team == 1 && !_isWhiteTurn && _currentTeam == 1))
                     {
+                        AudioManager.Instance.PlayClip(SoundClip.PickUpPiece);
                         var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
                         hpIndicator.GetComponent<TextMesh>().text = "HP";
                         hpIndicator.SetActive(false);
@@ -321,6 +322,7 @@ public class ChessBoard : MonoBehaviour
                     _currentlyDragging = null;
                     RemoveHighlightTiles();
                 }
+                AudioManager.Instance.PlayClip(SoundClip.PlaceDownPiece);
             }
         }
         else

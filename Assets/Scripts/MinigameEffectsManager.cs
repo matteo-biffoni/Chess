@@ -15,8 +15,7 @@ public class MinigameEffectsManager : MonoBehaviour
         _startingPoint = transformSp;
     }
 
-
-    public IEnumerator SpawnAttack(AttackType attackType, Vector3 aim)
+    public IEnumerator SpawnProjectile(Vector3 aim)
     {
         var movingGo = Instantiate(MovingPrefab, _startingPoint, Quaternion.Euler(0f, 0f, 0f));
         while (Vector3.Distance(movingGo.transform.position, aim) > 0.01f)
@@ -25,6 +24,11 @@ public class MinigameEffectsManager : MonoBehaviour
             yield return null;
         }
         Destroy(movingGo);
+    }
+
+
+    public IEnumerator SpawnAttack(AttackType attackType, Vector3 aim)
+    {
         GameObject prefab = null;
         switch (attackType)
         {
