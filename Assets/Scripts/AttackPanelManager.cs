@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class AttackPanelManager : MonoBehaviour
 {
+    //prova
     [SerializeField] private GameObject[] Panels;
     [SerializeField] private Sprite NormalAttack;
     //[SerializeField] private Sprite Pawn1;
