@@ -53,13 +53,20 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Button[] DispositionButtonsDefending;
 
     [SerializeField] private GameObject MovesPanel;
-    //private bool _localGame;
+
+    [SerializeField] private GameObject MinigameStarting;
+    [SerializeField] private GameObject MinigameOutcome;
+
+    [SerializeField] private GameObject OptionsButton;
+    [SerializeField] private GameObject OptionsMenu;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
     private bool _fullboard;
     private bool _2Turns;
     private bool _minigame = true;
+
+    private bool _inGame;
 
     public void SetFullboard(bool value)
     {
@@ -81,19 +88,6 @@ public class GameUI : MonoBehaviour
     {
         Instance = this;
         RegisterEvents();
-        /*FullBoardToggle.onValueChanged.AddListener(delegate
-        {
-            PartialBoardPanel.SetActive(!FullBoardToggle.isOn);
-            if (!FullBoardToggle.isOn) {
-                SelectAttackingDisposition(DispositionType.Heavy);
-                ScaleButtons(DispositionButtonsAttacking[0]);
-            }
-            else
-            {
-                SelectAttackingDisposition(DispositionType.None);
-                ScaleButtons(null);
-            }
-        });*/
         for(var i = 0; i < DispositionButtonsAttacking.Length; i++)
         {
             var disposition = (DispositionType)(i+1);
@@ -109,14 +103,6 @@ public class GameUI : MonoBehaviour
             });
         }
     }
-
-    /*private void ScaleButtons(Button highlighted)
-    {
-        foreach (var button in DispositionButtonsAttacking)
-            button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
-        foreach (var button in DispositionButtonsDefending)
-            button.transform.localScale = button == highlighted ? new Vector3(1.4f, 1.4f, 1f) : new Vector3(1f, 1f, 1f);
-    }*/
 
     private void ScaleButtons(bool attacking, int index)
     {
@@ -172,16 +158,90 @@ public class GameUI : MonoBehaviour
         }
 
         ConnectButton.interactable = AddressInput.text != "";
+        if (_inGame && Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (!OptionsMenu.activeSelf)
+                OpenOptionsMenu();
+            else
+                BackFromOptionsMenu();
+        }
+        
     }
 
     private void ZoomOut()
     {
         ChessBoard.enabled = true;
+        var text = "";
+        if (Confrontation.GetCurrentOutcome() == Outcome.Success)
+        {
+            text = Confrontation.GetCurrentAttacking().Team == 0 ? "Bug wins!" : "Vegetable wins!";
+        }
+        else if (Confrontation.GetCurrentOutcome() == Outcome.Failure)
+        {
+            text = Confrontation.GetCurrentAttacking().Team == 0 ? "Vegetable wins!" : "Bug wins!";
+        }
+        StartCoroutine(FadeInMinigameOutcome(text));
         StartCoroutine(ZoomOutAndClean(4));
+    }
+
+    private IEnumerator FadeMinigameStarting()
+    {
+        MinigameStarting.transform.localScale = Vector3.zero;
+        MinigameStarting.SetActive(true);
+        var timeElapsed = 0f;
+        while (timeElapsed < 1.5f)
+        {
+            MinigameStarting.transform.localScale =
+                Vector3.Lerp(MinigameStarting.transform.localScale, Vector3.one, timeElapsed / 1.5f);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        MinigameStarting.transform.localScale = Vector3.one;
+        var color = Color.white;
+        timeElapsed = 0f;
+        while (timeElapsed < 0.3f)
+        {
+            color.a = Mathf.Lerp(color.a, 0f, timeElapsed / 0.3f);
+            timeElapsed += Time.deltaTime;
+            MinigameStarting.GetComponent<TMP_Text>().color = color;
+            yield return null;
+        }
+        MinigameStarting.SetActive(false);
+        color.a = 1f;
+        MinigameStarting.GetComponent<TMP_Text>().color = color;
+    }
+    private IEnumerator FadeInMinigameOutcome(string text)
+    {
+        MinigameOutcome.GetComponent<TMP_Text>().text = text;
+        MinigameOutcome.transform.localScale = Vector3.zero;
+        MinigameOutcome.SetActive(true);
+        var timeElapsed = 0f;
+        while (timeElapsed < 1.5f)
+        {
+            MinigameOutcome.transform.localScale =
+                Vector3.Lerp(MinigameOutcome.transform.localScale, Vector3.one, timeElapsed / 1.5f);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        MinigameOutcome.transform.localScale = Vector3.one;
+        var color = Color.white;
+        timeElapsed = 0f;
+        while (timeElapsed < 0.3f)
+        {
+            color.a = Mathf.Lerp(color.a, 0f, timeElapsed / 0.3f);
+            timeElapsed += Time.deltaTime;
+            MinigameOutcome.GetComponent<TMP_Text>().color = color;
+            yield return null;
+        }
+        MinigameOutcome.SetActive(false);
+        color.a = 1f;
+        MinigameOutcome.GetComponent<TMP_Text>().color = color;
     }
 
     public void ZoomIn(ChessPiece defender, bool isAttacking)
     {
+        _inGame = false;
+        OptionsButton.SetActive(false);
         MovesPanel.SetActive(false);
         ChessBoard.enabled = false;
         if (CameraAngles is not { Length: 3 })
@@ -196,16 +256,6 @@ public class GameUI : MonoBehaviour
                 parent = Cameras
             }
         };
-        /*if (_localGame)
-        {
-            newCamera.transform.position = defender.Team switch
-            {
-                0 => CameraAngles[2].transform.position,
-                1 => CameraAngles[1].transform.position,
-                _ => newCamera.transform.position
-            };
-        }
-        else*/
         {
             foreach (var cameraAngle in CameraAngles)
             {
@@ -223,6 +273,7 @@ public class GameUI : MonoBehaviour
             cameraAngle.SetActive(false);
         }
         StartCoroutine(ZoomInAnimationAndChangeScene(virtualCamera, 10, isAttacking));
+        StartCoroutine(FadeMinigameStarting());
     }
 
     private IEnumerator ZoomOutAndClean(int speed)
@@ -235,20 +286,12 @@ public class GameUI : MonoBehaviour
         _cameraBeforeConfrontation.gameObject.SetActive(false);
         var prevCamera = CameraAngles.FirstOrDefault(cameraAngle => cameraAngle.transform.position == _cameraBeforeConfrontation.transform.position);
         _cameraBeforeConfrontation = null;
-        /*if (_localGame)
-            switch (Confrontation.GetCurrentAttacking().Team)
-            {
-                case 0:
-                    CameraAngles[1].SetActive(true);
-                    break;
-                case 1:
-                    CameraAngles[2].SetActive(true);
-                    break;
-            }
-        else */if (prevCamera != null) 
+        if (prevCamera != null) 
             prevCamera.SetActive(true);
         Confrontation.ResetConfrontation();
         MovesPanel.SetActive(true);
+        OptionsButton.SetActive(true);
+        _inGame = true;
     }
 
     private IEnumerator ZoomInAnimationAndChangeScene(CinemachineVirtualCamera zoomInCamera, int speed, bool isAttacking)
@@ -275,14 +318,6 @@ public class GameUI : MonoBehaviour
             cameraAngle.SetActive(false);
         CameraAngles[(int) index].SetActive(true);
     }
-    /*public void OnLocalGameButton()
-    {
-        MenuAnimator.SetTrigger(InGameMenu);
-        //SetLocalGame?.Invoke(true);
-        //_localGame = true;
-        Server.Init(8007);
-        Client.Init("127.0.0.1", 8007);
-    }AAAAAAAAAAAAAAA*/
     public void OnHostMenuButton()
     {
         MenuAnimator.SetTrigger(HostMenu);
@@ -306,7 +341,6 @@ public class GameUI : MonoBehaviour
     public void OnOnlineConnectButton()
     {
         SetLocalGame?.Invoke(false);
-        //_localGame = false;
         MatchConfiguration.SetGameUIConfigurationP2(_selectedDefendingDisposition);
         Client.Init(AddressInput.text, 8007);
     }
@@ -322,6 +356,9 @@ public class GameUI : MonoBehaviour
     }
     public void OnLeaveFromGameMenu()
     {
+        _inGame = false;
+        OptionsButton.SetActive(false);
+        OptionsMenu.SetActive(false);
         ChangeCamera(CameraAngle.Menu);
         MenuAnimator.SetTrigger(StartMenu);
         StartCoroutine(FadeInPcs(2f));
@@ -379,7 +416,21 @@ public class GameUI : MonoBehaviour
     private void OnStartGameClient(NetMessage msg)
     {
         MenuAnimator.SetTrigger(InGameMenu);
+        OptionsButton.SetActive(true);
+        _inGame = true;
         StartCoroutine(FadeOutPcs(2f));
+    }
+
+    public void OpenOptionsMenu()
+    {
+        OptionsMenu.SetActive(true);
+        ChessBoard.SetPaused(true);
+    }
+
+    public void BackFromOptionsMenu()
+    {
+        OptionsMenu.SetActive(false);
+        ChessBoard.SetPaused(false);
     }
 
 

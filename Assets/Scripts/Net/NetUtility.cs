@@ -19,7 +19,8 @@ namespace Net
         NormalAttackInConfrontation = 9,
         HitInConfrontation = 10,
         SpecialAttackInConfrontation = 11,
-        MatchConfiguration = 12
+        MatchConfiguration = 12,
+        LeftMatch = 13
     }
     public static class NetUtility
     {
@@ -65,6 +66,9 @@ namespace Net
                 case OpCode.MatchConfiguration:
                     msg = new NetMatchConfiguration(stream);
                     break;
+                case OpCode.LeftMatch:
+                    msg = new NetLeftMatch(stream);
+                    break;
                 default:
                     Debug.LogError("Message received has no OpCode");
                     break;
@@ -83,6 +87,7 @@ namespace Net
         public static Action<NetMessage> CWelcome;
         public static Action<NetMessage> CStartGame;
         public static Action<NetMessage> CMakeMove;
+        public static Action<NetMessage> CLeftMatch;
         //public static Action<NetMessage> CRematch;
         public static Action<NetMessage> CCreateConfrontation;
         public static Action<NetMessage> CResolveConfrontation;
@@ -95,6 +100,7 @@ namespace Net
         public static Action<NetMessage, NetworkConnection> SWelcome;
         public static Action<NetMessage, NetworkConnection> SStartGame;
         public static Action<NetMessage, NetworkConnection> SMakeMove;
+        public static Action<NetMessage, NetworkConnection> SLeftMatch;
         //public static Action<NetMessage, NetworkConnection> SRematch;
         public static Action<NetMessage, NetworkConnection> SCreateConfrontation;
         public static Action<NetMessage, NetworkConnection> SResolveConfrontation;

@@ -9,6 +9,7 @@ public class MinigameEffectsManager : MonoBehaviour
     [SerializeField] private GameObject NormalVegsPrefab;
     [SerializeField] private GameObject SpecialBugsPrefab;
     [SerializeField] private GameObject SpecialVegsPrefab;
+    
 
     public void SetStartingPoint(Vector3 transformSp)
     {

@@ -5,11 +5,13 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance { get; set; }
+    public static AudioManager Instance { get; private set; }
     private AudioSource _audioSource;
 
     [SerializeField] private AudioClip PickUpPiece;
     [SerializeField] private AudioClip PlaceDownPiece;
+    [SerializeField] private AudioClip NormalAttack;
+    [SerializeField] private AudioClip SpecialAttack;
 
 
 
@@ -22,6 +24,12 @@ public class AudioManager : MonoBehaviour
                 break;
             case SoundClip.PlaceDownPiece:
                 _audioSource.clip = PlaceDownPiece;
+                break;
+            case SoundClip.NormalAttack:
+                _audioSource.clip = NormalAttack;
+                break;
+            case SoundClip.SpecialAttack:
+                _audioSource.clip = SpecialAttack;
                 break;
         }
         _audioSource.Play();
@@ -37,5 +45,7 @@ public class AudioManager : MonoBehaviour
 public enum SoundClip
 {
     PickUpPiece,
-    PlaceDownPiece
+    PlaceDownPiece,
+    NormalAttack,
+    SpecialAttack
 }

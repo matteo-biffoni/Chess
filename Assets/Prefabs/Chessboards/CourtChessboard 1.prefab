@@ -417,6 +417,8 @@ MonoBehaviour:
   MovableTexturePrefab: {fileID: 8549638481364495150, guid: b307de992ed271344a13167546163789, type: 3}
   FiredTexturePrefab: {fileID: 5572296756052676957, guid: 077d63d365eb3a24392b8ee636c10adc, type: 3}
   MinigameEffectsManager: {fileID: 0}
+  DamagingAudioSource: {fileID: 0}
+  MovementAudioSource: {fileID: 0}
 --- !u!82 &6854800028149328076
 AudioSource:
   m_ObjectHideFlags: 0

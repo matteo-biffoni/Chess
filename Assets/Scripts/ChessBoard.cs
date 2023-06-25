@@ -92,6 +92,9 @@ public class ChessBoard : MonoBehaviour
 
     private uint _movesInTurn;
 
+    private bool _matchEnded;
+    private bool _paused;
+
     private void Start()
     {
         _isWhiteTurn = true;
@@ -103,6 +106,7 @@ public class ChessBoard : MonoBehaviour
 
     private IEnumerator Setup()
     {
+        _matchEnded = false;
         GenerateAllTiles(TileSize, TileCountX, TileCountY);
         SpawnAllPieces();
         PositionAllPieces();
@@ -173,6 +177,16 @@ public class ChessBoard : MonoBehaviour
         TurnIndicator.color = colorA;
     }
 
+    public ChessPiece[,] GetChessPieces()
+    {
+        return _chessPieces;
+    }
+
+    public void SetPaused(bool value)
+    {
+        _paused = value;
+    }
+
     private void Update()
     {
         if (!_mainCamera)
@@ -181,6 +195,7 @@ public class ChessBoard : MonoBehaviour
             return;
         }
         if (!_setupDone) return;
+        if (_paused) return;
         TurnIndicator.text = _isWhiteTurn ? "It's bugs' turn" : "It's vegetables' turn";
         var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out var info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
@@ -392,11 +407,6 @@ public class ChessBoard : MonoBehaviour
                 MovesUI.AddMove(new ChessMove(attacking.Team, attacking.Type, attackingPosition,
                     defendingPosition, true, defending.Type, false));
                 _isWhiteTurn = !_isWhiteTurn;
-                /*if (_localGame)
-                {
-                    _currentTeam = _currentTeam == 0 ? 1 : 0;
-                    GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
-                }*/
                 break;
             case Outcome.Success:
                 if (_specialMove == SpecialMove.EnPassant)
@@ -620,35 +630,22 @@ public class ChessBoard : MonoBehaviour
     {
         StartCoroutine(HideTurnIndicator());
         DisplayVictory(team);
+        _matchEnded = true;
     }
     private void DisplayVictory(int winningTeam)
     {
         VictoryScreen.SetActive(true);
         VictoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
     }
-    /*public void OnRematchButton()
-    {
-        {
-            var nr = new NetRematch()
-            {
-                TeamID = _currentTeam,
-                WantRematch = 1
-            };
-            Client.Instance.SendToServer(nr);
-            RematchButton.GetComponent<Button>().interactable = false;
-        }
-    }*/
     private void GameReset()
     {
+        _paused = false;
         _configurationSetup[0] = _configurationSetup[1] = false;
         _setupDone = false;
         MovesUI.ClearMoves();
-        /*RematchButton.GetComponent<Button>().interactable = true;
-        RematchIndicator.SetActive(false);
-        AcceptedRematch.SetActive(false);
-        LeftRematch.SetActive(false);*/
         VictoryScreen.transform.GetChild(0).gameObject.SetActive(false);
         VictoryScreen.transform.GetChild(1).gameObject.SetActive(false);
+        VictoryScreen.transform.GetChild(2).gameObject.SetActive(false);
         VictoryScreen.SetActive(false);
         _currentlyDragging = null;
         _currentHover = new Vector2Int();
@@ -680,22 +677,14 @@ public class ChessBoard : MonoBehaviour
         {
             HpIndicators.transform.GetChild(i).gameObject.SetActive(false);
         }
-        /*if (_localGame)
-        {
-            _currentTeam = 0;
-            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
-            
-        }*/
-
     }
     public void OnMenuButton()
     {
-        var nr = new NetRematch()
+        var nlm = new NetLeftMatch()
         {
-            TeamID = _currentTeam,
-            WantRematch = 0
+            Team = _currentTeam
         };
-        Client.Instance.SendToServer(nr);
+        Client.Instance.SendToServer(nlm);
         GameReset();
         GameUI.Instance.OnLeaveFromGameMenu();
         Invoke(nameof(ShutdownRelay), 1.0f);
@@ -996,11 +985,6 @@ public class ChessBoard : MonoBehaviour
                 _isWhiteTurn = !_isWhiteTurn;
                 break;
         }
-        /*if (_localGame)
-        {
-            _currentTeam = _currentTeam == 0 ? 1 : 0;
-            GameUI.Instance.ChangeCamera((CameraAngle) _currentTeam + 1, _chessPieces);
-        }*/
         _moveList.Add(new [] { previousPosition, new (x, y)});
         MovesUI.AddMove(new ChessMove(cp.Team, cp.Type, previousPosition, new Vector2Int(x, y), killed != ChessPieceType.None, killed, true));
         
@@ -1017,6 +1001,7 @@ public class ChessBoard : MonoBehaviour
     {
         NetUtility.SWelcome += OnWelcomeServer;
         NetUtility.SMakeMove += OnMakeMoveServer;
+        NetUtility.SLeftMatch += OnLeftMatchServer;
         //NetUtility.SRematch += OnRematchServer;
         NetUtility.SCreateConfrontation += OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation += OnResolveConfrontationServer;
@@ -1024,6 +1009,7 @@ public class ChessBoard : MonoBehaviour
         NetUtility.CWelcome += OnWelcomeClient;
         NetUtility.CStartGame += OnStartGameClient;
         NetUtility.CMakeMove += OnMakeMoveClient;
+        NetUtility.CLeftMatch += OnLeftMatchClient;
         //NetUtility.CRematch += OnRematchClient;
         NetUtility.CCreateConfrontation += OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation += OnResolveConfrontationClient;
@@ -1035,6 +1021,7 @@ public class ChessBoard : MonoBehaviour
     {
         NetUtility.SWelcome -= OnWelcomeServer;
         NetUtility.SMakeMove -= OnMakeMoveServer;
+        NetUtility.SLeftMatch -= OnLeftMatchServer;
         //NetUtility.SRematch -= OnRematchServer;
         NetUtility.SCreateConfrontation -= OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation -= OnResolveConfrontationServer;
@@ -1042,6 +1029,7 @@ public class ChessBoard : MonoBehaviour
         NetUtility.CWelcome -= OnWelcomeClient;
         NetUtility.CStartGame -= OnStartGameClient;
         NetUtility.CMakeMove -= OnMakeMoveClient;
+        NetUtility.CLeftMatch -= OnLeftMatchClient;
         //NetUtility.CRematch -= OnRematchClient;
         NetUtility.CCreateConfrontation -= OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation -= OnResolveConfrontationClient;
@@ -1049,6 +1037,15 @@ public class ChessBoard : MonoBehaviour
         GameUI.Instance.SetLocalGame -= OnSetLocalGame;
     }
 
+    private void OnLeftMatchServer(NetMessage msg, NetworkConnection cnn)
+    {
+        if (msg is not NetLeftMatch nlm)
+        {
+            Debug.LogError("[S] Could not cast NetMessage to NetLeftMatch");
+            return;
+        }
+        Server.Instance.Broadcast(nlm);
+    }
     private void OnMatchConfigurationServer(NetMessage msg, NetworkConnection cnn)
     {
         if (msg is not NetMatchConfiguration nmc)
@@ -1114,6 +1111,25 @@ public class ChessBoard : MonoBehaviour
         Debug.Log($"My assigned team is {nw.AssignedTeam}");
     }
 
+    private void OnLeftMatchClient(NetMessage msg)
+    {
+        if (msg is not NetLeftMatch nlm)
+        {
+            Debug.LogError("[C] Could nnot cast NetMessage to NetLeftMatch");
+            return;
+        }
+
+        if (!_matchEnded && _currentTeam != -1 && nlm.Team != _currentTeam)
+        {
+            var text = _currentTeam == 0
+                ? "Vegetables left the match. Bugs win!"
+                : "Bugs left the match. Vegetables win!";
+            VictoryScreen.transform.GetChild(2).GetComponent<TMP_Text>().text = text;
+            VictoryScreen.transform.GetChild(2).gameObject.SetActive(true);
+            VictoryScreen.SetActive(true);
+        }
+    }
+
     private void OnMatchConfigurationClient(NetMessage msg)
     {
         if (msg is not NetMatchConfiguration nmc)
@@ -1149,7 +1165,6 @@ public class ChessBoard : MonoBehaviour
         {
             MatchConfiguration = myConf
         });
-        //GameUI.Instance.ChangeCamera(_currentTeam == 0 ? CameraAngle.WhiteTeam : CameraAngle.BlackTeam, _chessPieces);
     }
     private void OnMakeMoveClient(NetMessage msg)
     {
@@ -1166,27 +1181,6 @@ public class ChessBoard : MonoBehaviour
             MoveTo(mm.OriginalX, mm.OriginalY, mm.DestinationX, mm.DestinationY);
         }
     }
-    /*private void OnRematchClient(NetMessage msg)
-    {
-        if (msg is not NetRematch nr)
-        {
-            Debug.LogError("[C] Could not cast NetMessage to NetRematch");
-            return;
-        }
-        _playerRematch[nr.TeamID] = nr.WantRematch == 1;
-        if (nr.TeamID != _currentTeam && _currentTeam != -1)
-        {
-            RematchIndicator.SetActive(true);
-            AcceptedRematch.SetActive(nr.WantRematch == 1);
-            LeftRematch.SetActive(nr.WantRematch == 0);
-            if (nr.WantRematch != 1)
-            {
-                RematchButton.GetComponent<Button>().interactable = false;
-            }
-        }
-        if (_playerRematch[0] && _playerRematch[1])
-            GameReset();
-    }*/
     private void OnCreateConfrontationClient(NetMessage msg)
     {
         if (msg is not NetCreateConfrontation ncc)
@@ -1245,7 +1239,6 @@ public class ChessBoard : MonoBehaviour
     {
         _playerCount = -1;
         _currentTeam = -1;
-        //_localGame = v;
     }
     #endregion
 }

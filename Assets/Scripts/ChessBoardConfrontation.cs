@@ -50,6 +50,9 @@ public class ChessBoardConfrontation : MonoBehaviour
 
     [SerializeField] private MinigameEffectsManager MinigameEffectsManager;
 
+    [SerializeField] private AudioSource DamagingAudioSource;
+    [SerializeField] private AudioSource MovementAudioSource;
+
     private bool _timeElapsed;
     
     private GameObject[,] _tiles;
@@ -222,6 +225,7 @@ public class ChessBoardConfrontation : MonoBehaviour
     private IEnumerator FireCell(Vector2Int cell, AttackType attackType, int which)
     {
         yield return MinigameEffectsManager.SpawnProjectile(GetTileCenter(cell.x, cell.y));
+        AudioManager.Instance.PlayClip(which != 0 ? SoundClip.SpecialAttack : SoundClip.NormalAttack);
         StartCoroutine(MinigameEffectsManager.SpawnAttack(attackType, GetTileCenter(cell.x, cell.y)));
         StartCoroutine(ResetNormalAttackAfterInterval());
         if (ConfrontationListener.IsAttacking)
@@ -411,6 +415,7 @@ public class ChessBoardConfrontation : MonoBehaviour
                             _defending.CurrentY = hitPosition.y;
                             _defending.SetConfrontationAim(_aim);
                             _isMoving = true;
+                            MovementAudioSource.Play();
                             RemoveHighlightTiles();
                             var mmic = new NetMakeMoveInConfrontation
                             {
@@ -457,7 +462,16 @@ public class ChessBoardConfrontation : MonoBehaviour
     {
         while (true)
         {
-            CheckForDamage(GetCellForPlayerPosition());
+            if (CheckForDamage(GetCellForPlayerPosition()))
+            {
+                if (!DamagingAudioSource.isPlaying)
+                    DamagingAudioSource.Play();
+            }
+            else
+            {
+                if (DamagingAudioSource.isPlaying)
+                    DamagingAudioSource.Stop();
+            }
             // SE pezzo morto o fine gioco uscire dal ciclo
             if (_defending.IsDead() || _timeElapsed) break;
             yield return new WaitForSeconds(0.05f);
@@ -469,14 +483,16 @@ public class ChessBoardConfrontation : MonoBehaviour
         yield return null;
     }
 
-    private void CheckForDamage(Vector2Int tile)
+    private bool CheckForDamage(Vector2Int tile)
     {
         if (_firedCells[tile.x, tile.y] != 0)
         {
             _defending.DamagePiece();
             // Mandare messaggio all'attaccante
             Client.Instance.SendToServer(new NetHitInConfrontation());
+            return true;
         }
+        return false;
     }
     
     private Vector2Int LookupTileIndex(GameObject hitInfo)
