@@ -103,6 +103,12 @@ namespace ChessPieces
             return null;
         }
 
+        public virtual List<Vector2Int> GetPossibleMovesFromPosition(ref ChessPiece[,] board, int tileCountX,
+            int tileCountY, Vector2Int fromPosition)
+        {
+            return null;
+        }
+
         public virtual List<Vector2Int> GetAvailableMovesInConfrontation(ref ChessPiece[,] board, int tileCountX,
             int tileCountY)
         {

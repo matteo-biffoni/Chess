@@ -58,7 +58,7 @@ public class PlaylistsModeManager : MonoBehaviour
 
     public void SelectButton(int i)
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         if (_selectedIndex != i)
         {
             DeselectButton(_selectedIndex);

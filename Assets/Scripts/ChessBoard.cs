@@ -263,6 +263,7 @@ public class ChessBoard : MonoBehaviour
                 var previousPosition = new Vector2Int(_currentlyDragging.CurrentX, _currentlyDragging.CurrentY);
                 if (ContainsValidMove(ref _availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)))
                 {
+                    CheckForCheck(_currentlyDragging, hitPosition);
                     if (FightWithConfrontation && _chessPieces[hitPosition.x, hitPosition.y] != null &&
                         _chessPieces[hitPosition.x, hitPosition.y].Team != _currentTeam)
                     {
@@ -389,6 +390,32 @@ public class ChessBoard : MonoBehaviour
             }
             StartCoroutine(EndConfrontation(outcome));
             _confrontationHandled = true;
+        }
+    }
+
+    private void CheckForCheck(ChessPiece attacking, Vector2Int position)
+    {
+        ChessPiece targetKing = null;
+        var isCheck = false;
+        foreach (var chessPiece in _chessPieces)
+        {
+            if (chessPiece != null && chessPiece.Type == ChessPieceType.King && chessPiece.Team != attacking.Team)
+            {
+                targetKing = chessPiece;
+                break;
+            }
+        }
+        if (targetKing == null) return;
+        var availableMoves = attacking.GetPossibleMovesFromPosition(ref _chessPieces, TileCountX, TileCountY, position);
+        foreach (var availableMove in availableMoves)
+        {
+            if (availableMove.x == targetKing.CurrentX && availableMove.y == targetKing.CurrentY)
+                isCheck = true;
+        }
+
+        if (isCheck)
+        {
+            
         }
     }
 
@@ -680,7 +707,7 @@ public class ChessBoard : MonoBehaviour
     }
     public void OnMenuButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         var nlm = new NetLeftMatch()
         {
             Team = _currentTeam

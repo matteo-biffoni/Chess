@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -52,6 +53,20 @@ public class ChessBoardConfrontation : MonoBehaviour
 
     [SerializeField] private AudioSource DamagingAudioSource;
     [SerializeField] private AudioSource MovementAudioSource;
+
+    [SerializeField] private Sprite Ant;
+    [SerializeField] private Sprite Beetle;
+    [SerializeField] private Sprite Butterfly;
+    [SerializeField] private Sprite Ladybug;
+    [SerializeField] private Sprite Mantis;
+    [SerializeField] private Sprite Bumblebee;
+    [SerializeField] private Sprite Tomato;
+    [SerializeField] private Sprite Leek;
+    [SerializeField] private Sprite Carrot;
+    [SerializeField] private Sprite Zuchini;
+    [SerializeField] private Sprite Eggplant;
+    [SerializeField] private Sprite Broccoli;
+    [SerializeField] private Image SliderImage;
 
     private bool _timeElapsed;
     
@@ -330,9 +345,12 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (ConfrontationListener.IsAttacking)
         {
-            if (Input.GetKey(SpecialAttack1Key))
+            if (Input.GetKey(SpecialAttack1Key) && _attacking.Type != ChessPieceType.Pawn)
                 _selectedSpecialAttack = 1;
-            else if (Input.GetKey(SpecialAttack2Key) && _attacking.Type != ChessPieceType.Pawn)
+            else if (Input.GetKey(SpecialAttack2Key) &&
+                     _attacking.Type != ChessPieceType.Pawn &&
+                     _attacking.Type != ChessPieceType.King &&
+                     _attacking.Type != ChessPieceType.Knight)
                 _selectedSpecialAttack = 2;
             else if (Input.GetKey(SpecialAttack3Key) && _attacking.Type == ChessPieceType.Queen)
                 _selectedSpecialAttack = 3;
@@ -572,9 +590,39 @@ public class ChessBoardConfrontation : MonoBehaviour
             AttackPanelManager.SetAttackingType(_attacking.Type);
         }
         HpSlider.value = _defending.GetHp();
+        SetSpriteFromDefendingPieceType(_defending.Team, _defending.Type);
         //Debug.Log($"Initial hp slider value: {HpSlider.value}");
         //Debug.Log($"Initial defender hp: {_defending.GetHp()}");
         StartCoroutine(MiniGameTimer());
+    }
+
+    private void SetSpriteFromDefendingPieceType(int team, ChessPieceType pieceType)
+    {
+        switch (pieceType)
+        {
+            case ChessPieceType.None:
+                break;
+            case ChessPieceType.Pawn:
+                SliderImage.sprite = team == 0 ? Ant : Tomato;
+                break;
+            case ChessPieceType.Rook:
+                SliderImage.sprite = team == 0 ? Beetle : Leek;
+                break;
+            case ChessPieceType.Knight:
+                SliderImage.sprite = team == 0 ? Butterfly : Carrot;
+                break;
+            case ChessPieceType.Bishop:
+                SliderImage.sprite = team == 0 ? Ladybug : Zuchini;
+                break;
+            case ChessPieceType.Queen:
+                SliderImage.sprite = team == 0 ? Mantis : Eggplant;
+                break;
+            case ChessPieceType.King:
+                SliderImage.sprite = team == 0 ? Bumblebee : Broccoli;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+        }
     }
 
     private IEnumerator MiniGameTimer()

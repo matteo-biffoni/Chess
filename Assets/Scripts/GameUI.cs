@@ -61,6 +61,9 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject OptionsMenu;
 
     [SerializeField] private GameObject SettingsMenu;
+
+    [SerializeField] private GameObject TutorialCanvas;
+    [SerializeField] private GameObject CreditsCanvas;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
@@ -69,6 +72,11 @@ public class GameUI : MonoBehaviour
     private bool _minigame = true;
 
     private bool _inGame;
+
+    public bool IsInGame()
+    {
+        return _inGame;
+    }
 
     public void SetFullboard(bool value)
     {
@@ -97,12 +105,12 @@ public class GameUI : MonoBehaviour
             var buttonDefending = DispositionButtonsDefending[i];
             buttonAttacking.onClick.AddListener(delegate
             {
-                AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+                AudioManager.Instance.PlayButtonPressed();
                 SelectAttackingDisposition(disposition);
             });
             buttonDefending.onClick.AddListener(delegate
             {
-                AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+                AudioManager.Instance.PlayButtonPressed();
                 SelectDefendingDisposition(disposition);
             });
         }
@@ -147,7 +155,7 @@ public class GameUI : MonoBehaviour
 
     public void QuitEverything()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         Application.Quit();
     }
 
@@ -325,19 +333,19 @@ public class GameUI : MonoBehaviour
     }
     public void OnHostMenuButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         MenuAnimator.SetTrigger(HostMenu);
     }
 
     public void OnFindMenuButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         MenuAnimator.SetTrigger(FindAMatchMenu);
         SelectDefendingDisposition(DispositionType.Heavy);
     }
     public void OnHostHostButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         MatchConfiguration.SetGameUIConfigurationP1(_fullboard, _selectedAttackingDisposition, _2Turns, _minigame);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
@@ -347,19 +355,19 @@ public class GameUI : MonoBehaviour
     }
     public void OnOnlineConnectButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         SetLocalGame?.Invoke(false);
         MatchConfiguration.SetGameUIConfigurationP2(_selectedDefendingDisposition);
         Client.Init(AddressInput.text, 8007);
     }
     public void BackOnMainMenu()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         MenuAnimator.SetTrigger(StartMenu);
     }
     public void OnWaitingBackButton()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         Server.Shutdown();
         Client.Shutdown();
         MenuAnimator.SetTrigger(HostMenu);
@@ -375,7 +383,7 @@ public class GameUI : MonoBehaviour
     }
 
     public void OnPlaylistsButton(){
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         if(!_playlistsMenu){
             PlaylistsMenu.SetActive(true);
             PlaylistsMenu.transform.GetComponent<PlaylistsModeManager>().Visible = true;
@@ -386,7 +394,7 @@ public class GameUI : MonoBehaviour
     }
 
     public void OnCustomMatchButton(){
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         if(_playlistsMenu){
             CustomMatchMenu.SetActive(true);
             CustomMatchMenu.transform.GetComponent<CustomModeManager>().Visible = true;
@@ -414,15 +422,39 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    public void OpenTutorial()
+    {
+        AudioManager.Instance.PlayButtonPressed();
+        TutorialCanvas.SetActive(true);
+    }
+
+    public void CloseTutorial()
+    {
+        AudioManager.Instance.PlayButtonPressed();
+        TutorialCanvas.SetActive(false);
+    }
+
+    public void OpenCredits()
+    {
+        AudioManager.Instance.PlayButtonPressed();
+        CreditsCanvas.SetActive(true);
+    }
+
+    public void CloseCredits()
+    {
+        AudioManager.Instance.PlayButtonPressed();
+        CreditsCanvas.SetActive(false);
+    }
+
     public void OpenSettings()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         SettingsMenu.SetActive(true);
     }
 
     public void CloseSettings()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         SettingsMenu.SetActive(false);
     }
 
@@ -467,14 +499,14 @@ public class GameUI : MonoBehaviour
 
     public void OpenOptionsMenu()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         OptionsMenu.SetActive(true);
         ChessBoard.SetPaused(true);
     }
 
     public void BackFromOptionsMenu()
     {
-        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        AudioManager.Instance.PlayButtonPressed();
         OptionsMenu.SetActive(false);
         ChessBoard.SetPaused(false);
     }

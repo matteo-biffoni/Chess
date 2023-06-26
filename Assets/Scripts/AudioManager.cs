@@ -82,6 +82,11 @@ public class AudioManager : MonoBehaviour
     {
         MinigameAudioSource.volume = volume;
     }
+
+    public void PlayButtonPressed()
+    {
+        PlayClip(SoundClip.ButtonPressed);
+    }
 }
 
 public enum SoundClip

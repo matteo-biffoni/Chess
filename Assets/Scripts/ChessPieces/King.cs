@@ -5,6 +5,66 @@ namespace ChessPieces
 {
     public class King : ChessPiece
     {
+        public override List<Vector2Int> GetSpecialAttack1Cells(Vector2Int cell, int tileCountX, int tileCountY)
+        {
+            var r = new List<Vector2Int>();
+            for (var i = cell.x - 1; i <= cell.x + 1; i++)
+                for (var j = cell.y - 1; j <= cell.y + 1; j++)
+                    if (i >= 0 && i < tileCountX && j >= 0 && j < tileCountY)
+                        r.Add(new Vector2Int(i, j));
+            return r;
+        }
+
+        public override List<Vector2Int> GetPossibleMovesFromPosition(ref ChessPiece[,] board, int tileCountX, int tileCountY, Vector2Int fromPosition)
+        {
+            var r = new List<Vector2Int>();
+            if (fromPosition.x + 1 < tileCountX)
+            {
+                if (board[fromPosition.x + 1, fromPosition.y] == null)
+                    r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y));
+                else if(board[fromPosition.x + 1, fromPosition.y].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y));
+            
+                if (fromPosition.y + 1 < tileCountY)
+                    if (board[fromPosition.x + 1, fromPosition.y + 1] == null)
+                        r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y + 1));
+                    else if(board[fromPosition.x + 1, fromPosition.y + 1].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y + 1));
+                if (fromPosition.y - 1 >= 0)
+                    if (board[fromPosition.x + 1, fromPosition.y - 1] == null)
+                        r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y - 1));
+                    else if(board[fromPosition.x + 1, fromPosition.y - 1].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y - 1));
+            }
+
+            if (fromPosition.x - 1 >= 0)
+            {
+                if (board[fromPosition.x - 1, fromPosition.y] == null)
+                    r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y));
+                else if(board[fromPosition.x - 1, fromPosition.y].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y));
+            
+                if (fromPosition.y + 1 < tileCountY)
+                    if (board[fromPosition.x - 1, fromPosition.y + 1] == null)
+                        r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y + 1));
+                    else if(board[fromPosition.x - 1, fromPosition.y + 1].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y + 1));
+                if (fromPosition.y - 1 >= 0)
+                    if (board[fromPosition.x - 1, fromPosition.y - 1] == null)
+                        r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y - 1));
+                    else if(board[fromPosition.x - 1, fromPosition.y - 1].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y - 1));
+            }
+            if (fromPosition.y + 1 < tileCountY)
+                if (board[fromPosition.x, fromPosition.y + 1] == null || board[fromPosition.x, fromPosition.y + 1].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x, fromPosition.y + 1));
+        
+            if (fromPosition.y - 1 >= 0)
+                if (board[fromPosition.x, fromPosition.y - 1] == null || board[fromPosition.x, fromPosition.y - 1].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x, fromPosition.y - 1));
+            return r;
+        }
+
         public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();

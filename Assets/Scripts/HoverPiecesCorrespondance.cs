@@ -13,12 +13,13 @@ public class HoverPiecesCorrespondance : MonoBehaviour
     [SerializeField] private GameObject[] Traditional;
     [SerializeField] private Material[] WhiteMaterials;
     [SerializeField] private Material[] BlackMaterials;
+    [SerializeField] private GameUI GameUI;
 
     private readonly List<GameObject> _instantiated = new();
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyToHover))
+        if (Input.GetKeyDown(KeyToHover) && GameUI.IsInGame())
         {
             foreach (var chessPiece in ChessBoard.GetChessPieces())
             {

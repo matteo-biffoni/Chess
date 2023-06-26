@@ -5,6 +5,55 @@ namespace ChessPieces
 {
     public class Rook : ChessPiece
     {
+        public override List<Vector2Int> GetPossibleMovesFromPosition(ref ChessPiece[,] board, int tileCountX, int tileCountY, Vector2Int fromPosition)
+        {
+            var r = new List<Vector2Int>();
+            for (var i = fromPosition.y - 1; i >= 0; i--)
+            {
+                if (board[fromPosition.x, i] == null)
+                    r.Add(new Vector2Int(fromPosition.x, i));
+                if (board[fromPosition.x, i] != null)
+                {
+                    if (board[fromPosition.x, i].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x, i));
+                    break;
+                }
+            }
+            for (var i = fromPosition.y + 1; i < tileCountY; i++)
+            {
+                if (board[fromPosition.x, i] == null)
+                    r.Add(new Vector2Int(fromPosition.x, i));
+                if (board[fromPosition.x, i] != null)
+                {
+                    if (board[fromPosition.x, i].Team != Team)
+                        r.Add(new Vector2Int(fromPosition.x, i));
+                    break;
+                }
+            }
+            for (var i = fromPosition.x - 1; i >= 0; i--)
+            {
+                if (board[i, fromPosition.y] == null)
+                    r.Add(new Vector2Int(i, fromPosition.y));
+                if (board[i, fromPosition.y] != null)
+                {
+                    if (board[i, fromPosition.y].Team != Team)
+                        r.Add(new Vector2Int(i, fromPosition.y));
+                    break;
+                }
+            }
+            for (var i = fromPosition.x + 1; i < tileCountX; i++)
+            {
+                if (board[i, fromPosition.y] == null)
+                    r.Add(new Vector2Int(i, fromPosition.y));
+                if (board[i, fromPosition.y] != null)
+                {
+                    if (board[i, fromPosition.y].Team != Team)
+                        r.Add(new Vector2Int(i, fromPosition.y));
+                    break;
+                }
+            }
+            return r;        }
+
         public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();

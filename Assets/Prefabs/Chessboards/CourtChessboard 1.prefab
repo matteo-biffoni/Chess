@@ -419,6 +419,19 @@ MonoBehaviour:
   MinigameEffectsManager: {fileID: 0}
   DamagingAudioSource: {fileID: 0}
   MovementAudioSource: {fileID: 0}
+  Ant: {fileID: 21300000, guid: de669daaf3905d2409a1d9a93229eb7e, type: 3}
+  Beetle: {fileID: 21300000, guid: 50b38dbccc20ac94ca5b2adb6a41bd9a, type: 3}
+  Butterfly: {fileID: 21300000, guid: 954791a627617a5459659b057ae53506, type: 3}
+  Ladybug: {fileID: 21300000, guid: 70fb6b2f731853545bf591d8a1ef74fa, type: 3}
+  Mantis: {fileID: 21300000, guid: 73e995e6cabf2114e9cafd4c7ae12538, type: 3}
+  Bumblebee: {fileID: 21300000, guid: cd893a92c85bfbe48996e20096138875, type: 3}
+  Tomato: {fileID: 21300000, guid: 06ea71c770986574e809bc4202beba6e, type: 3}
+  Leek: {fileID: 21300000, guid: f273e5117128563489a2443a46673655, type: 3}
+  Carrot: {fileID: 21300000, guid: 03e9fe7a3fe90e946b4714ee32cf70eb, type: 3}
+  Zuchini: {fileID: 21300000, guid: 859e7e2afc8776144a1c7ba1a30daf40, type: 3}
+  Eggplant: {fileID: 21300000, guid: 1536f3b92fc41f741b130ebbab1521ac, type: 3}
+  Broccoli: {fileID: 21300000, guid: ae94c11f3b5eaf548919cfb7436f983f, type: 3}
+  SliderImage: {fileID: 0}
 --- !u!82 &6854800028149328076
 AudioSource:
   m_ObjectHideFlags: 0

@@ -5,6 +5,29 @@ namespace ChessPieces
 {
     public class Pawn : ChessPiece
     {
+        public override List<Vector2Int> GetPossibleMovesFromPosition(ref ChessPiece[,] board, int tileCountX, int tileCountY, Vector2Int fromPosition)
+        {
+            var r = new List<Vector2Int>();
+            var direction = Team == 0 ? 1 : -1;
+            if (board[fromPosition.x, fromPosition.y + direction] == null)
+                r.Add(new Vector2Int(fromPosition.x, fromPosition.y + direction));
+            if (board[fromPosition.x, fromPosition.y + direction] == null)
+            {
+                if (Team == 0 && fromPosition.y == 1 && board[fromPosition.x, fromPosition.y + direction * 2] == null)
+                    r.Add(new Vector2Int(fromPosition.x, fromPosition.y + direction * 2));
+            
+                if (Team == 1 && fromPosition.y == 6 && board[fromPosition.x, fromPosition.y + direction * 2] == null)
+                    r.Add(new Vector2Int(fromPosition.x, fromPosition.y + direction * 2));
+            }
+            if (fromPosition.x != tileCountX - 1)
+                if (board[fromPosition.x + 1, fromPosition.y + direction] != null && board[fromPosition.x + 1, fromPosition.y + direction].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x + 1, fromPosition.y + direction));
+        
+            if (fromPosition.x != 0)
+                if (board[fromPosition.x - 1, fromPosition.y + direction] != null && board[fromPosition.x - 1, fromPosition.y + direction].Team != Team)
+                    r.Add(new Vector2Int(fromPosition.x - 1, fromPosition.y + direction));
+            return r;        }
+
         public override List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
         {
             var r = new List<Vector2Int>();
