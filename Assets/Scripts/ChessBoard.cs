@@ -680,6 +680,7 @@ public class ChessBoard : MonoBehaviour
     }
     public void OnMenuButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         var nlm = new NetLeftMatch()
         {
             Team = _currentTeam

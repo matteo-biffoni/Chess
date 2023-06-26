@@ -50,6 +50,7 @@ public class CustomModeManager : MonoBehaviour
 
     public void MinigameToggleValueChanged()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         GameUI.SetMinigame(MinigameToggle.isOn);
     }
 

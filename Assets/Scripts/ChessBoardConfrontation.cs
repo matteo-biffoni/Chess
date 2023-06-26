@@ -81,6 +81,7 @@ public class ChessBoardConfrontation : MonoBehaviour
         Instance = this;
         SetupChessBoard();
         RegisterEvents();
+        AudioManager.Instance.SetMinigameBackgroundSource(GetComponent<AudioSource>());
     }
 
     private static void RegisterEvents()

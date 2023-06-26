@@ -59,6 +59,8 @@ public class GameUI : MonoBehaviour
 
     [SerializeField] private GameObject OptionsButton;
     [SerializeField] private GameObject OptionsMenu;
+
+    [SerializeField] private GameObject SettingsMenu;
     
     private CinemachineVirtualCamera _cameraBeforeConfrontation;
 
@@ -95,10 +97,12 @@ public class GameUI : MonoBehaviour
             var buttonDefending = DispositionButtonsDefending[i];
             buttonAttacking.onClick.AddListener(delegate
             {
+                AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
                 SelectAttackingDisposition(disposition);
             });
             buttonDefending.onClick.AddListener(delegate
             {
+                AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
                 SelectDefendingDisposition(disposition);
             });
         }
@@ -143,6 +147,7 @@ public class GameUI : MonoBehaviour
 
     public void QuitEverything()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         Application.Quit();
     }
 
@@ -320,17 +325,19 @@ public class GameUI : MonoBehaviour
     }
     public void OnHostMenuButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         MenuAnimator.SetTrigger(HostMenu);
-        //SelectAttackingDisposition(DispositionType.Heavy);
     }
 
     public void OnFindMenuButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         MenuAnimator.SetTrigger(FindAMatchMenu);
         SelectDefendingDisposition(DispositionType.Heavy);
     }
     public void OnHostHostButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         MatchConfiguration.SetGameUIConfigurationP1(_fullboard, _selectedAttackingDisposition, _2Turns, _minigame);
         Server.Init(8007);
         SetLocalGame?.Invoke(false);
@@ -340,16 +347,19 @@ public class GameUI : MonoBehaviour
     }
     public void OnOnlineConnectButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         SetLocalGame?.Invoke(false);
         MatchConfiguration.SetGameUIConfigurationP2(_selectedDefendingDisposition);
         Client.Init(AddressInput.text, 8007);
     }
     public void BackOnMainMenu()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         MenuAnimator.SetTrigger(StartMenu);
     }
     public void OnWaitingBackButton()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         Server.Shutdown();
         Client.Shutdown();
         MenuAnimator.SetTrigger(HostMenu);
@@ -365,6 +375,7 @@ public class GameUI : MonoBehaviour
     }
 
     public void OnPlaylistsButton(){
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         if(!_playlistsMenu){
             PlaylistsMenu.SetActive(true);
             PlaylistsMenu.transform.GetComponent<PlaylistsModeManager>().Visible = true;
@@ -375,6 +386,7 @@ public class GameUI : MonoBehaviour
     }
 
     public void OnCustomMatchButton(){
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         if(_playlistsMenu){
             CustomMatchMenu.SetActive(true);
             CustomMatchMenu.transform.GetComponent<CustomModeManager>().Visible = true;
@@ -402,6 +414,38 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    public void OpenSettings()
+    {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        SettingsMenu.SetActive(true);
+    }
+
+    public void CloseSettings()
+    {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
+        SettingsMenu.SetActive(false);
+    }
+
+    public void SetGameBackgroundVolume(Single volume)
+    {
+        AudioManager.Instance.SetGameBackgroundVolume(volume);
+    }
+
+    public void SetMinigameBackgroundVolume(Single volume)
+    {
+        AudioManager.Instance.SetMinigameBackgroundVolume(volume);
+    }
+
+    public void SetGameEffectsVolume(Single volume)
+    {
+        AudioManager.Instance.SetGameEffectsVolume(volume);
+    }
+
+    public void SetMinigameEffectsVolume(Single volume)
+    {
+        AudioManager.Instance.SetMinigameEffectsVolume(volume);
+    }
+
 
     #region MULTIPLAYER
     private void RegisterEvents()
@@ -423,12 +467,14 @@ public class GameUI : MonoBehaviour
 
     public void OpenOptionsMenu()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         OptionsMenu.SetActive(true);
         ChessBoard.SetPaused(true);
     }
 
     public void BackFromOptionsMenu()
     {
+        AudioManager.Instance.PlayClip(SoundClip.ButtonPressed);
         OptionsMenu.SetActive(false);
         ChessBoard.SetPaused(false);
     }
