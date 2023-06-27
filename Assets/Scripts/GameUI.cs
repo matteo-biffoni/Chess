@@ -325,6 +325,18 @@ public class GameUI : MonoBehaviour
         EventSystem.SetActive(false);
         _confrontationHandled = false;
     }
+
+    public GameObject SetFreeCam()
+    {
+        GameObject toReturn = null; 
+        foreach (var cameraAngle in CameraAngles)
+        {
+            if (cameraAngle.activeSelf)
+                toReturn = cameraAngle;
+            cameraAngle.SetActive(false);
+        }
+        return toReturn;
+    }
     public void ChangeCamera(CameraAngle index)
     {
         foreach (var cameraAngle in CameraAngles)
