@@ -62,6 +62,9 @@ public class ChessBoard : MonoBehaviour
 
     [SerializeField] private GameObject HpIndicators;
     [SerializeField] private TMP_Text TurnIndicator;
+    [SerializeField] private TMP_Text CheckLabel;
+
+    private bool _inCheck;
     
     // Logic
     private ChessPiece[,] _chessPieces;
@@ -263,7 +266,6 @@ public class ChessBoard : MonoBehaviour
                 var previousPosition = new Vector2Int(_currentlyDragging.CurrentX, _currentlyDragging.CurrentY);
                 if (ContainsValidMove(ref _availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)))
                 {
-                    CheckForCheck(_currentlyDragging, hitPosition);
                     if (FightWithConfrontation && _chessPieces[hitPosition.x, hitPosition.y] != null &&
                         _chessPieces[hitPosition.x, hitPosition.y].Team != _currentTeam)
                     {
@@ -274,7 +276,6 @@ public class ChessBoard : MonoBehaviour
                         Confrontation.StartConfrontation(_chessPieces[previousPosition.x, previousPosition.y],
                             _chessPieces[hitPosition.x, hitPosition.y]);
                         GameUI.Instance.ZoomIn(_chessPieces[hitPosition.x, hitPosition.y], true);
-                        //if (!_localGame)
                         {
                             var cc = new NetCreateConfrontation
                             {
@@ -300,7 +301,6 @@ public class ChessBoard : MonoBehaviour
                         var defending = _chessPieces[_moveList[^1][1].x, _moveList[^1][1].y];
                         Confrontation.StartConfrontation(attacking, defending);
                         GameUI.Instance.ZoomIn(defending, true);
-                        //if (!_localGame)
                         {
                             var cc = new NetCreateConfrontation
                             {
@@ -317,6 +317,7 @@ public class ChessBoard : MonoBehaviour
                     }
                     else
                     {
+                        CheckForCheck(_currentlyDragging, hitPosition);
                         MoveTo(previousPosition.x, previousPosition.y, hitPosition.x, hitPosition.y);
                         var mm = new NetMakeMove
                         {
@@ -396,7 +397,6 @@ public class ChessBoard : MonoBehaviour
     private void CheckForCheck(ChessPiece attacking, Vector2Int position)
     {
         ChessPiece targetKing = null;
-        var isCheck = false;
         foreach (var chessPiece in _chessPieces)
         {
             if (chessPiece != null && chessPiece.Type == ChessPieceType.King && chessPiece.Team != attacking.Team)
@@ -407,15 +407,17 @@ public class ChessBoard : MonoBehaviour
         }
         if (targetKing == null) return;
         var availableMoves = attacking.GetPossibleMovesFromPosition(ref _chessPieces, TileCountX, TileCountY, position);
-        foreach (var availableMove in availableMoves)
-        {
-            if (availableMove.x == targetKing.CurrentX && availableMove.y == targetKing.CurrentY)
-                isCheck = true;
-        }
+        _inCheck = availableMoves.Exists(availableMove =>
+            availableMove.x == targetKing.CurrentX && availableMove.y == targetKing.CurrentY);
 
-        if (isCheck)
+        if (_inCheck)
         {
-            
+            CheckLabel.text = attacking.Team == 0 ? "Vegetables' King  is in check!" : "Bugs' King is in check!";
+            CheckLabel.gameObject.SetActive(true);
+        }
+        else
+        {
+            CheckLabel.gameObject.SetActive(false);
         }
     }
 
@@ -434,8 +436,17 @@ public class ChessBoard : MonoBehaviour
                 MovesUI.AddMove(new ChessMove(attacking.Team, attacking.Type, attackingPosition,
                     defendingPosition, true, defending.Type, false));
                 _isWhiteTurn = !_isWhiteTurn;
+                if (_inCheck)
+                {
+                    CheckMate(defending.Team);
+                }
                 break;
             case Outcome.Success:
+                if (_inCheck)
+                {
+                    _inCheck = false;
+                    CheckLabel.gameObject.SetActive(false);
+                }
                 if (_specialMove == SpecialMove.EnPassant)
                 {
                     switch (attacking.Team)
@@ -655,6 +666,7 @@ public class ChessBoard : MonoBehaviour
     // Checkmate
     private void CheckMate(int team)
     {
+        CheckLabel.gameObject.SetActive(false);
         StartCoroutine(HideTurnIndicator());
         DisplayVictory(team);
         _matchEnded = true;
@@ -666,6 +678,7 @@ public class ChessBoard : MonoBehaviour
     }
     private void GameReset()
     {
+        CheckLabel.gameObject.SetActive(false);
         _paused = false;
         _configurationSetup[0] = _configurationSetup[1] = false;
         _setupDone = false;
@@ -1207,6 +1220,7 @@ public class ChessBoard : MonoBehaviour
             _availableMoves = target.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
             _specialMove = target.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves);
             MoveTo(mm.OriginalX, mm.OriginalY, mm.DestinationX, mm.DestinationY);
+            CheckForCheck(_chessPieces[mm.DestinationX, mm.DestinationY], new Vector2Int(mm.DestinationX, mm.DestinationY));
         }
     }
     private void OnCreateConfrontationClient(NetMessage msg)
