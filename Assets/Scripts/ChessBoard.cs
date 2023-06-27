@@ -319,6 +319,11 @@ public class ChessBoard : MonoBehaviour
                     else
                     {
                         CheckForCheck(_currentlyDragging, hitPosition);
+                        if (_inCheck && TwoMoves)
+                        {
+                            _movesInTurn = 0;
+                            _isWhiteTurn = !_isWhiteTurn;
+                        }
                         MoveTo(previousPosition.x, previousPosition.y, hitPosition.x, hitPosition.y);
                         var mm = new NetMakeMove
                         {
@@ -1221,6 +1226,11 @@ public class ChessBoard : MonoBehaviour
             _specialMove = target.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves);
             MoveTo(mm.OriginalX, mm.OriginalY, mm.DestinationX, mm.DestinationY);
             CheckForCheck(_chessPieces[mm.DestinationX, mm.DestinationY], new Vector2Int(mm.DestinationX, mm.DestinationY));
+            if (_inCheck && TwoMoves)
+            {
+                _movesInTurn = 0;
+                _isWhiteTurn = !_isWhiteTurn;
+            }
         }
     }
     private void OnCreateConfrontationClient(NetMessage msg)
