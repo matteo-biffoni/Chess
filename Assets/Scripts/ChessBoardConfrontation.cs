@@ -185,6 +185,7 @@ public class ChessBoardConfrontation : MonoBehaviour
         }
         if (ConfrontationListener.IsAttacking)
         {
+            MovementAudioSource.Play();
             _aim = GetTileCenter(mmic.DestinationX, mmic.DestinationY);
             _defending.CurrentX = mmic.DestinationX;
             _defending.CurrentY = mmic.DestinationY;

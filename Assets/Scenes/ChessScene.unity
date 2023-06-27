@@ -11465,11 +11465,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Sound Designer
+  m_text: 'Soundtrack Composer
 
-    Soundtrack Composer
+    Sound Designer
 
-    Content Creator
+    Marketing
 
     2d Artist
 
@@ -14126,8 +14126,6 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Game Designer
 
-    Level Designer
-
     Producer
 
     Quality Assurance'
@@ -14242,7 +14240,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -429.39807}
+  m_AnchoredPosition: {x: 960, y: -429.39844}
   m_SizeDelta: {x: 1000, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &909956851
@@ -24293,7 +24291,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -304.39807}
+  m_AnchoredPosition: {x: 960, y: -304.39844}
   m_SizeDelta: {x: 1000, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1535459956
@@ -26842,11 +26840,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Level Designer
+  m_text: 'Chief Developer
 
-    Chief Developer
+    3d Artist
 
-    3d Artist'
+    Game Designer'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 91d0c953a14d88a4ea9d77ab13d98463, type: 2}
   m_sharedMaterial: {fileID: -195410610376853167, guid: 91d0c953a14d88a4ea9d77ab13d98463, type: 2}
@@ -29303,12 +29301,9 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Chief Game Designer
 
-    Chief Level Designer
-
     Developer
 
-    Sound
-    Designer'
+    Sound Designer'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 91d0c953a14d88a4ea9d77ab13d98463, type: 2}
   m_sharedMaterial: {fileID: -195410610376853167, guid: 91d0c953a14d88a4ea9d77ab13d98463, type: 2}
@@ -31093,7 +31088,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -110.47452}
+  m_AnchoredPosition: {x: 960, y: -110.47461}
   m_SizeDelta: {x: 800, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1973886146
@@ -31788,7 +31783,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960.00006, y: -415.63562}
+  m_AnchoredPosition: {x: 960, y: -415.63477}
   m_SizeDelta: {x: 500, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2013224118

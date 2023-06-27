@@ -101,9 +101,6 @@ public class ChessBoard : MonoBehaviour
     private void Start()
     {
         _isWhiteTurn = true;
-        //GenerateAllTiles(TileSize, TileCountX, TileCountY);
-        //SpawnAllPieces();
-        //PositionAllPieces();
         RegisterEvents();
     }
 
@@ -246,17 +243,21 @@ public class ChessBoard : MonoBehaviour
                     if ((_chessPieces[hitPosition.x, hitPosition.y].Team == 0 && _isWhiteTurn && _currentTeam == 0) ||
                         (_chessPieces[hitPosition.x, hitPosition.y].Team == 1 && !_isWhiteTurn && _currentTeam == 1))
                     {
-                        AudioManager.Instance.PlayClip(SoundClip.PickUpPiece);
-                        var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
-                        hpIndicator.GetComponent<TextMesh>().text = "HP";
-                        hpIndicator.SetActive(false);
-                        _currentlyDragging = _chessPieces[hitPosition.x, hitPosition.y];
-                        _availableMoves =
-                            _currentlyDragging.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
-                        _specialMove =
-                            _currentlyDragging.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves);
-                        PreventCheck();
-                        HighlightTiles();
+                        if (!(TwoMoves && _movesInTurn == 1 && hitPosition == _moveList[^1][1]))
+                        {
+                            AudioManager.Instance.PlayClip(SoundClip.PickUpPiece);
+                            var hpIndicator = GetHpIndicator(hitPosition.x, hitPosition.y);
+                            hpIndicator.GetComponent<TextMesh>().text = "HP";
+                            hpIndicator.SetActive(false);
+                            _currentlyDragging = _chessPieces[hitPosition.x, hitPosition.y];
+                            _availableMoves =
+                                _currentlyDragging.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
+                            _specialMove =
+                                _currentlyDragging.GetSpecialMoves(ref _chessPieces, ref _moveList,
+                                    ref _availableMoves);
+                            PreventCheck();
+                            HighlightTiles();
+                        }
                     }
                 }
             }
@@ -436,12 +437,20 @@ public class ChessBoard : MonoBehaviour
                 MovesUI.AddMove(new ChessMove(attacking.Team, attacking.Type, attackingPosition,
                     defendingPosition, true, defending.Type, false));
                 _isWhiteTurn = !_isWhiteTurn;
+                if (TwoMoves)
+                {
+                    _movesInTurn = 0;
+                }
                 if (_inCheck)
                 {
                     CheckMate(defending.Team);
                 }
                 break;
             case Outcome.Success:
+                if (TwoMoves)
+                {
+                    _movesInTurn = 2;
+                }
                 if (_inCheck)
                 {
                     _inCheck = false;
@@ -942,7 +951,6 @@ public class ChessBoard : MonoBehaviour
         }
         if (targetKing == null)
         {
-            Debug.Log("No king found");
             return false;
         }
         if (ContainsValidMove(ref currentAvailableMoves, new Vector2Int(targetKing.CurrentX, targetKing.CurrentY)))
@@ -1018,7 +1026,7 @@ public class ChessBoard : MonoBehaviour
         _movesInTurn++;
         switch (TwoMoves)
         {
-            case true when _movesInTurn == 2 || (_movesInTurn == 1 && _moveList.Count == 0):
+            case true when _movesInTurn >= 2 || (_movesInTurn == 1 && _moveList.Count == 0):
                 _isWhiteTurn = !_isWhiteTurn;
                 _movesInTurn = 0;
                 break;
@@ -1043,7 +1051,6 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SWelcome += OnWelcomeServer;
         NetUtility.SMakeMove += OnMakeMoveServer;
         NetUtility.SLeftMatch += OnLeftMatchServer;
-        //NetUtility.SRematch += OnRematchServer;
         NetUtility.SCreateConfrontation += OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation += OnResolveConfrontationServer;
         NetUtility.SMatchConfiguration += OnMatchConfigurationServer;
@@ -1051,7 +1058,6 @@ public class ChessBoard : MonoBehaviour
         NetUtility.CStartGame += OnStartGameClient;
         NetUtility.CMakeMove += OnMakeMoveClient;
         NetUtility.CLeftMatch += OnLeftMatchClient;
-        //NetUtility.CRematch += OnRematchClient;
         NetUtility.CCreateConfrontation += OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation += OnResolveConfrontationClient;
         NetUtility.CMatchConfiguration += OnMatchConfigurationClient;
@@ -1063,7 +1069,6 @@ public class ChessBoard : MonoBehaviour
         NetUtility.SWelcome -= OnWelcomeServer;
         NetUtility.SMakeMove -= OnMakeMoveServer;
         NetUtility.SLeftMatch -= OnLeftMatchServer;
-        //NetUtility.SRematch -= OnRematchServer;
         NetUtility.SCreateConfrontation -= OnCreateConfrontationServer;
         NetUtility.SResolveConfrontation -= OnResolveConfrontationServer;
         NetUtility.SMatchConfiguration -= OnMatchConfigurationServer;
@@ -1071,7 +1076,6 @@ public class ChessBoard : MonoBehaviour
         NetUtility.CStartGame -= OnStartGameClient;
         NetUtility.CMakeMove -= OnMakeMoveClient;
         NetUtility.CLeftMatch -= OnLeftMatchClient;
-        //NetUtility.CRematch -= OnRematchClient;
         NetUtility.CCreateConfrontation -= OnCreateConfrontationClient;
         NetUtility.CResolveConfrontation -= OnResolveConfrontationClient;
         NetUtility.CMatchConfiguration -= OnMatchConfigurationClient;
@@ -1117,10 +1121,6 @@ public class ChessBoard : MonoBehaviour
         }
         Server.Instance.Broadcast(mm);
     }
-    /*private void OnRematchServer(NetMessage msg, NetworkConnection cnn)
-    {
-        Server.Instance.Broadcast(msg);
-    }*/
 
     private void OnCreateConfrontationServer(NetMessage msg, NetworkConnection cnn)
     {
@@ -1149,7 +1149,6 @@ public class ChessBoard : MonoBehaviour
             return;
         }
         _currentTeam = nw.AssignedTeam;
-        Debug.Log($"My assigned team is {nw.AssignedTeam}");
     }
 
     private void OnLeftMatchClient(NetMessage msg)
@@ -1168,6 +1167,7 @@ public class ChessBoard : MonoBehaviour
             VictoryScreen.transform.GetChild(2).GetComponent<TMP_Text>().text = text;
             VictoryScreen.transform.GetChild(2).gameObject.SetActive(true);
             VictoryScreen.SetActive(true);
+            StartCoroutine(HideTurnIndicator());
         }
     }
 
@@ -1200,7 +1200,6 @@ public class ChessBoard : MonoBehaviour
             Debug.LogError("[C] Could not cast NetMessage to NetStartGame");
             return;
         }
-        Debug.Log("On start game client");
         var myConf = MatchConfiguration.GetGameUIConfiguration();
         Client.Instance.SendToServer(new NetMatchConfiguration
         {
@@ -1216,6 +1215,7 @@ public class ChessBoard : MonoBehaviour
         }
         if (mm.TeamID != _currentTeam)
         {
+            AudioManager.Instance.PlayClip(SoundClip.PlaceDownPiece);
             var target = _chessPieces[mm.OriginalX, mm.OriginalY];
             _availableMoves = target.GetAvailableMoves(ref _chessPieces, TileCountX, TileCountY);
             _specialMove = target.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves);
@@ -1232,8 +1232,6 @@ public class ChessBoard : MonoBehaviour
         }
         var attacking = _chessPieces[ncc.AttackingX, ncc.AttackingY];
         var defending = _chessPieces[ncc.DefendingX, ncc.DefendingY];
-        
-        Debug.Log(attacking + " is attacking " + defending);
         StartCoroutine(ShowAttackingMoveThenGoToConfrontation(attacking, defending));
     }
 
@@ -1260,7 +1258,7 @@ public class ChessBoard : MonoBehaviour
         var target = new Vector3(defendingPosition.x, 0.701f,
             defendingPosition.z);
         attacking.SetPosition(target);
-        while (Vector3.Distance(attackingTransform.position, target) > 0.01f)
+        while (attackingTransform != null && Vector3.Distance(attackingTransform.position, target) > 0.01f)
         {
             yield return null;
         }
